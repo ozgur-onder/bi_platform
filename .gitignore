@@ -1,0 +1,11 @@
+# Python önbellek dosyaları
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Sanal ortam
+venv/
+env/
+
+# Çevresel değişkenler (ileride kullanacağız)
+.env
