@@ -8,6 +8,16 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'><path d='M3 3h2v18H3V3zm6 8h2v10H9V11zm6-5h2v15h-2V6zm6 4h2v11h-2v-11z'/></svg>">
     
     <link id="theme-style" rel="stylesheet" href="/static/css/forgot_light.css">
+    <!-- FOUC Önleme: body render edilmeden doğru tema yüklenir -->
+    <script>
+        (function () {
+            var t = localStorage.getItem('user-theme') ||
+                    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            if (t === 'dark') {
+                document.getElementById('theme-style').setAttribute('href', '/static/css/forgot_dark.css');
+            }
+        })();
+    </script>
 </head>
 <body>
 
@@ -48,7 +58,7 @@
                             <path d="M16 10h2"></path>
                             <path d="M16 14h2"></path>
                         </svg>
-                        <input type="text" id="sicil-no" placeholder="Örn: 123456" required>
+                        <input type="text" id="sicil-no" placeholder="Lütfen Sicil Numaranızı Giriniz" required>
                     </div>
                 </div>
 
@@ -56,13 +66,13 @@
                     <label for="email">E-posta Adresi</label>
                     <div class="input-wrapper">
                         <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                        <input type="email" id="email" placeholder="kurulum@sistem.com" required>
+                        <input type="email" id="email" placeholder="Lütfen E-posta Adresinizi Giriniz" required>
                     </div>
                 </div>
                 
                 <button class="login-btn" onclick="alert('Sıfırlama bağlantısı gönderildi.')">Sıfırlama Bağlantısı Gönder</button>
 
-                <!-- Giriş Ekranına Geri Dön Linki (SPA Uyumlu) -->
+                <!-- Giriş Ekranına Geri Dön Linki -->
                 <div class="forgot-password">
                     <a href="#" onclick="sayfaYukle(event, 'index')" class="forgot-password-link">← Giriş ekranına dön</a>
                 </div>
@@ -76,47 +86,41 @@
     </div>
 
     <script>
-        const themeStyle = document.getElementById('theme-style');
-        
-        // Kayıtlı temayı hafızadan alıyoruz
-        const savedTheme = localStorage.getItem('user-theme') || 'light';
+        // Tema localStorage'dan okunur — DOM'a asla bağımlı değiliz
+        function initTheme() {
+            if (!localStorage.getItem('user-theme')) {
+                var t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                localStorage.setItem('user-theme', t);
+            }
+        }
 
         function applyTheme(theme) {
-            themeStyle.setAttribute('href`, `/static/css/forgot_${theme}.css`);
+            document.getElementById('theme-style').setAttribute('href', '/static/css/forgot_' + theme + '.css');
         }
-        
-        applyTheme(savedTheme);
 
         function toggleTheme() {
-            const isDark = themeStyle.getAttribute('href').includes('dark');
-            const newTheme = isDark ? 'light' : 'dark';
-            
-            applyTheme(newTheme);
+            var newTheme = localStorage.getItem('user-theme') === 'dark' ? 'light' : 'dark';
             localStorage.setItem('user-theme', newTheme);
+            applyTheme(newTheme);
         }
+
+        initTheme();
 
         // SPA Sayfa Yükleme Motoru (Giriş ekranına dönebilmek için)
         async function sayfaYukle(event, sayfaAdi) {
-            event.preventDefault(); 
+            event.preventDefault();
             try {
                 const response = await fetch('/bilesen/' + sayfaAdi);
-                if (!response.ok) throw new Error("Bileşen bulunamadı.");
+                if (!response.ok) {
+                    throw new Error("Bileşen bulunamadı.");
+                }
                 const html = await response.text();
-                
                 document.open();
                 document.write(html);
                 document.close();
-                
-                // Temayı koruma
-                const currentTheme = localStorage.getItem('user-theme') || 'light';
-                if (currentTheme === 'dark') {
-                    const newThemeStyle = document.getElementById('theme-style');
-                    if(newThemeStyle) {
-                        newThemeStyle.setAttribute('href', newThemeStyle.getAttribute('href').replace('light', 'dark'));
-                    }
-                }
             } catch (error) {
                 console.error("Sayfa yüklenirken hata oluştu:", error);
+                alert("Sayfa yüklenemedi. Lütfen tekrar deneyin.");
             }
         }
     </script>
