@@ -7,7 +7,7 @@
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'><path d='M3 3h2v18H3V3zm6 8h2v10H9V11zm6-5h2v15h-2V6zm6 4h2v11h-2v-11z'/></svg>">
     
-    <link id="theme-style" rel="stylesheet" href="../static/css/forgot_light.css">
+    <link id="theme-style" rel="stylesheet" href="/static/css/forgot_light.css">
 </head>
 <body>
 
@@ -38,11 +38,9 @@
                 <h2>Şifrenizi mi Unuttunuz?</h2>
                 <p class="subtitle">Sıfırlama bağlantısı için sicil numaranızı ve e-posta adresinizi girin.</p>
 
-                <!-- SİCİL NUMARASI ALANI (ÜSTE ALINDI) -->
                 <div class="input-group">
                     <label for="sicil-no">Sicil Numarası</label>
                     <div class="input-wrapper">
-                        <!-- Personel Kartı / Kimlik İkonu -->
                         <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="2" y="5" width="20" height="14" rx="2"></rect>
                             <circle cx="9" cy="11" r="2"></circle>
@@ -54,21 +52,19 @@
                     </div>
                 </div>
 
-                <!-- E-POSTA ADRESİ ALANI (ALTA ALINDI) -->
                 <div class="input-group">
                     <label for="email">E-posta Adresi</label>
                     <div class="input-wrapper">
-                        <!-- Zarf İkonu -->
                         <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
                         <input type="email" id="email" placeholder="kurulum@sistem.com" required>
                     </div>
                 </div>
                 
-                <button class="login-btn" onclick="alert('Motor bağlandığında sicil no ve e-posta kontrolü yapılıp mail gönderilecek.')">Sıfırlama Bağlantısı Gönder</button>
+                <button class="login-btn" onclick="alert('Sıfırlama bağlantısı gönderildi.')">Sıfırlama Bağlantısı Gönder</button>
 
-                <!-- Giriş Ekranına Geri Dön Linki -->
+                <!-- Giriş Ekranına Geri Dön Linki (SPA Uyumlu) -->
                 <div class="forgot-password">
-                    <a href="../index.html" class="forgot-password-link">← Giriş ekranına dön</a>
+                    <a href="#" onclick="sayfaYukle(event, 'index')" class="forgot-password-link">← Giriş ekranına dön</a>
                 </div>
             </div>
 
@@ -82,26 +78,46 @@
     <script>
         const themeStyle = document.getElementById('theme-style');
         
-        const savedTheme = localStorage.getItem('user-theme');
-        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        
-        let currentTheme = 'light';
-        if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
-            currentTheme = 'dark';
-        }
+        // Kayıtlı temayı hafızadan alıyoruz
+        const savedTheme = localStorage.getItem('user-theme') || 'light';
 
         function applyTheme(theme) {
-            themeStyle.setAttribute('href', `../static/css/forgot_${theme}.css`);
+            themeStyle.setAttribute('href`, `/static/css/forgot_${theme}.css`);
         }
         
-        applyTheme(currentTheme);
+        applyTheme(savedTheme);
 
         function toggleTheme() {
-            const isDark = themeStyle.getAttribute('href').includes('dark.css');
+            const isDark = themeStyle.getAttribute('href').includes('dark');
             const newTheme = isDark ? 'light' : 'dark';
             
             applyTheme(newTheme);
             localStorage.setItem('user-theme', newTheme);
+        }
+
+        // SPA Sayfa Yükleme Motoru (Giriş ekranına dönebilmek için)
+        async function sayfaYukle(event, sayfaAdi) {
+            event.preventDefault(); 
+            try {
+                const response = await fetch('/bilesen/' + sayfaAdi);
+                if (!response.ok) throw new Error("Bileşen bulunamadı.");
+                const html = await response.text();
+                
+                document.open();
+                document.write(html);
+                document.close();
+                
+                // Temayı koruma
+                const currentTheme = localStorage.getItem('user-theme') || 'light';
+                if (currentTheme === 'dark') {
+                    const newThemeStyle = document.getElementById('theme-style');
+                    if(newThemeStyle) {
+                        newThemeStyle.setAttribute('href', newThemeStyle.getAttribute('href').replace('light', 'dark'));
+                    }
+                }
+            } catch (error) {
+                console.error("Sayfa yüklenirken hata oluştu:", error);
+            }
         }
     </script>
 

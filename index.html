@@ -57,7 +57,7 @@
                 <button class="login-btn" onclick="alert('Motor bağlantısı bekleniyor...')">Giriş Yap</button>
 
                 <div class="forgot-password">
-                    <a href="sayfalar/sifremi_unuttum.html" class="forgot-password-link">Şifremi unuttum</a>
+                    <a href="#" onclick="sayfaYukle(event, 'sifremi_unuttum')" class="forgot-password-link">Şifremi unuttum</a>
                 </div>
             </div>
 
@@ -95,18 +95,38 @@
             localStorage.setItem('user-theme', newTheme);
         }
 
-        async function sayfaYukle(sayfaAdi) {
+        // URL DEĞİŞTİRMEDEN SAYFA YÜKLEME MOTORU
+        async function sayfaYukle(event, sayfaAdi) {
+            // Tarayıcının href="#" yüzünden sayfa atlamasını engelliyoruz
+            event.preventDefault(); 
+            
             try {
                 // Arka plandan FastAPI'ye istek atıp sayfanın kodunu alıyoruz
                 const response = await fetch('/bilesen/' + sayfaAdi);
+                
+                if (!response.ok) {
+                    throw new Error("Bileşen bulunamadı.");
+                }
+                
                 const html = await response.text();
                 
-                // Adres çubuğunu hiç değiştirmeden ekrandaki her şeyi yeni kodla değiştiriyoruz
+                // Sayfanın içeriğini yeni kodla güvenli bir şekilde değiştiriyoruz
                 document.open();
                 document.write(html);
                 document.close();
+                
+                // Tema ayarlarını yeni yüklenen sayfa için de geçerli kılıyoruz
+                const savedTheme = localStorage.getItem('user-theme');
+                if (savedTheme === 'dark') {
+                    const themeStyle = document.getElementById('theme-style');
+                    if(themeStyle) {
+                        themeStyle.setAttribute('href', themeStyle.getAttribute('href').replace('light', 'dark'));
+                    }
+                }
+                
             } catch (error) {
                 console.error("Sayfa yüklenirken hata oluştu:", error);
+                alert("Sayfa yüklenemedi. Lütfen tekrar deneyin.");
             }
         }
     </script>
