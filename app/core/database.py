@@ -1,33 +1,18 @@
-# app/core/database.py
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-from sqlalchemy.orm import DeclarativeBase
-from app.core.config import ayarlar
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
 
-# Async bağlantı motoru
-engine = create_async_engine(
-    ayarlar.DATABASE_URL,
-    echo=False,
-    pool_size=10,
-    max_overflow=20,
-)
+# docker-compose.yml ayarlarına göre tam eşleşen bağlantı adresi
+SQLALCHEMY_DATABASE_URL = "postgresql://ozgur.onder:BZrf5399!@localhost:5880/bi_veritabani"
 
-# Her istek için oturum fabrikası
-AsyncSessionLocal = async_sessionmaker(
-    bind=engine,
-    class_=AsyncSession,
-    expire_on_commit=False,
-)
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
-# Tüm modeller bu Base'den türeyecek
-class Base(DeclarativeBase):
-    pass
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Endpoint'lerde kullanılacak bağımlılık (dependency)
-async def db_oturumu():
-    async with AsyncSessionLocal() as oturum:
-        try:
-            yield oturum
-            await oturum.commit()
-        except Exception:
-            await oturum.rollback()
-            raise
+Base = declarative_base()
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

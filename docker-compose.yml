@@ -6,8 +6,8 @@ services:
     container_name: bi_postgres
     restart: always
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: gizlisifre123
+      POSTGRES_USER: ozgur.onder
+      POSTGRES_PASSWORD: BZrf5399!
       POSTGRES_DB: bi_veritabani
     ports:
       - "5880:5432"

@@ -368,7 +368,10 @@
             btn.disabled = true;
 
             const formData = new FormData();
-            formData.append("kullanici_adi", sicil_no); 
+            formData.append("ad", ad); 
+            formData.append("soyad", soyad); 
+            formData.append("sicil_no", sicil_no); 
+            formData.append("email", email); 
             formData.append("sifre", p1);
 
             try {

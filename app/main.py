@@ -1,90 +1,92 @@
-# app/main.py
-from fastapi import FastAPI, Request, Form, HTTPException
+from fastapi import FastAPI, Request, Form, HTTPException, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import os
+from sqlalchemy.orm import Session
+from sqlalchemy import text
+from app.core.database import get_db
 
 app = FastAPI(title="İş Zekası Platformu")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory=".")
 
-# Şimdilik veritabanı olmadığı için geçici kurulum bilgileri
-KURULUM_TAMAMLANDI = False
-ADMIN_SICIL = None
-ADMIN_SIFRE = None
-
-# 1. DIŞ DÜNYAYA AÇIK ANA SAYFA (GİRİŞ EKRANI VEYA KURULUM)
 @app.get("/", response_class=HTMLResponse)
-async def ana_sayfa(request: Request):
-    global KURULUM_TAMAMLANDI
+async def ana_sayfa(request: Request, db: Session = Depends(get_db)):
+    # Veritabanında hiç kayıtlı kullanıcı var mı diye bakıyoruz
+    kullanici_sayisi = db.execute(text("SELECT COUNT(*) FROM kullanicilar")).scalar()
     
-    # Kullanıcı yoksa (kurulum yapılmadıysa) direkt kurulum sayfasını aç
-    if not KURULUM_TAMAMLANDI:
+    # Kullanıcı yoksa kurulum ekranına yönlendir
+    if kullanici_sayisi == 0:
         return templates.TemplateResponse(request=request, name="sayfalar/kurulum.html")
     
-    # Kullanıcı varsa normal giriş sayfasını aç
+    # Kullanıcı varsa standart giriş ekranını aç
     return templates.TemplateResponse(request=request, name="index.html")
 
-# 2. GİZLİ BİLEŞEN VE SAYFA ROTALARI
 @app.get("/bilesen/{sayfa_adi}", response_class=HTMLResponse)
 async def bilesen_getir(request: Request, sayfa_adi: str):
-    # Ana sayfayı bileşen olarak çağırmayı engelle (Sonsuz döngü koruması)
     if sayfa_adi == "index":
         return RedirectResponse(url="/")
     
     dosya_yolu = f"sayfalar/{sayfa_adi}.html"
-    
     if os.path.exists(dosya_yolu):
         return templates.TemplateResponse(request=request, name=dosya_yolu)
     
     return HTMLResponse(content="Sayfa bulunamadı.", status_code=404)
 
-# 3. KURULUM İŞLEMLERİ
 @app.post("/kurulum-tamamla")
 async def kurulum_yap(
-    kullanici_adi: str = Form(...),
-    sifre: str = Form(...)
+    ad: str = Form(...),
+    soyad: str = Form(...),
+    sicil_no: str = Form(...),
+    email: str = Form(...),
+    sifre: str = Form(...),
+    db: Session = Depends(get_db)
 ):
-    global KURULUM_TAMAMLANDI, ADMIN_SICIL, ADMIN_SIFRE
+    # Başkası bizden önce kurmuş mu kontrolü
+    sayi = db.execute(text("SELECT COUNT(*) FROM kullanicilar")).scalar()
+    if sayi > 0:
+        raise HTTPException(status_code=400, detail="Sistem zaten kurulu.")
+        
+    # Kullanıcıyı veritabanına kaydet
+    db.execute(
+        text("INSERT INTO kullanicilar (sicil, ad, soyad, email, parola, olusturan_kullanici_sicil) VALUES (:sicil, :ad, :soyad, :email, :sifre, :sicil)"),
+        {"sicil": sicil_no, "ad": ad, "soyad": soyad, "email": email, "sifre": sifre}
+    )
     
-    # Geçici olarak sicil numarası ve şifreyi hafızaya kaydediyoruz (İleride DB'ye eklenecek)
-    ADMIN_SICIL = kullanici_adi
-    ADMIN_SIFRE = sifre
-    KURULUM_TAMAMLANDI = True 
+    # İlk kullanıcıya doğrudan Sistem Yöneticisi yetkisi ver
+    db.execute(
+        text("INSERT INTO kullanici_yetkileri (sicil, firma_id, rol_id, tanimlayan_kullanici_sicil) VALUES (:sicil, 1, 1, :sicil)"),
+        {"sicil": sicil_no}
+    )
     
-    return {"mesaj": "Kurulum başarılı, ana sayfaya yönlendiriliyorsunuz..."}
+    db.commit()
+    return {"mesaj": "Kurulum başarılı, giriş yapabilirsiniz."}
 
-# 4. GİRİŞ İŞLEMLERİ
 @app.post("/giris-yap")
 async def giris_islemi(
     kullanici_adi: str = Form(...),
-    sifre: str = Form(...)
+    sifre: str = Form(...),
+    db: Session = Depends(get_db)
 ):
-    global ADMIN_SICIL, ADMIN_SIFRE
+    # Veritabanında sicil ve şifre eşleşmesi ara
+    kullanici = db.execute(
+        text("SELECT sicil FROM kullanicilar WHERE sicil = :sicil AND parola = :sifre"),
+        {"sicil": kullanici_adi, "sifre": sifre}
+    ).fetchone()
     
-    # Girilen bilgiler kurulumda belirlenen bilgilerle eşleşiyor mu kontrol et
-    if kullanici_adi == ADMIN_SICIL and sifre == ADMIN_SIFRE:
-        return {"mesaj": "Giriş başarılı, sisteme aktarılıyorsunuz."}
+    if kullanici:
+        return {"mesaj": "Giriş başarılı."}
     else:
-        raise HTTPException(status_code=401, detail="Hatalı giriş")
+        raise HTTPException(status_code=401, detail="Hatalı giriş.")
 
-# 5. İŞ ZEKASI PLATFORMU (DASHBOARD) - BAŞARILI GİRİŞTEN SONRAKİ SAYFA
 @app.get("/platform", response_class=HTMLResponse)
 async def platform_dashboard():
-    # Şimdilik buraya basit bir karşılama metni koyuyoruz, ileride burası ana uygulama ekranın olacak (Metabase, n8n entegrasyonu vb.)
     html_icerik = """
     <html>
-        <head>
-            <title>Platform - İş Zekası</title>
-            <style>
-                body { background-color: #0f172a; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-                h1 { color: #3b82f6; }
-            </style>
-        </head>
-        <body>
-            <h1>İş Zekası Platformuna Hoş Geldiniz</h1>
+        <body style="background-color: #0f172a; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: sans-serif;">
+            <h1 style="color: #3b82f6;">İş Zekası Platformuna Hoş Geldiniz</h1>
             <p>Admin girişi başarıyla sağlandı. Raporlar ve entegrasyonlar yakında burada olacak.</p>
             <a href="/" style="color: white; margin-top: 20px;">Çıkış Yap</a>
         </body>
