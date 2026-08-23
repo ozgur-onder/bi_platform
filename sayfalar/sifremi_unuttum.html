@@ -112,7 +112,7 @@
                     </div>
                 </div>
                 
-                <button class="login-btn" onclick="sifirlamaGonder()">Sıfırlama Bağlantısı Gönder</button>
+                <button class="login-btn" onclick="handleForgotPassword(event)">Sıfırlama Bağlantısı Gönder</button>
 
                 <div class="forgot-password">
                     <a href="/" class="forgot-password-link">← Giriş ekranına dön</a>
@@ -127,63 +127,87 @@
     </div>
 
     <script>
-        function initTheme() {
-            var t = localStorage.getItem('user-theme');
-            if (!t) {
-                t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-                localStorage.setItem('user-theme', t);
-            }
-            document.documentElement.setAttribute('data-theme', t);
-        }
-        
-        function applyTheme(theme) {
-            document.getElementById('theme-style').setAttribute('href', '/static/css/forgot_' + theme + '.css');
-            document.documentElement.setAttribute('data-theme', theme);
-        }
-        
-        function toggleTheme() {
-            var newTheme = localStorage.getItem('user-theme') === 'dark' ? 'light' : 'dark';
-            localStorage.setItem('user-theme', newTheme);
-            applyTheme(newTheme);
-        }
-        initTheme();
-
-        let toastTimeout;
-        function showNotification(message, type = 'error') {
+        // Bildirim Gösterme Fonksiyonu
+        function showNotification(message, type) {
             const toast = document.getElementById('customToast');
-            const toastMsg = document.getElementById('toastMessage');
-            const toastIcon = document.getElementById('toastIcon');
+            const msg = document.getElementById('toastMessage');
+            const icon = document.getElementById('toastIcon');
 
-            if (type === 'error') {
-                toast.className = 'toast-error';
-                toastIcon.innerHTML = '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>';
+            msg.innerText = message;
+
+            if (type === 'success') {
+                toast.className = 'toast-success show';
+                icon.innerHTML = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>';
             } else {
-                toast.className = 'toast-success';
-                toastIcon.innerHTML = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>';
+                toast.className = 'toast-error show';
+                icon.innerHTML = '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>';
             }
 
-            toastMsg.innerText = message;
-            toast.classList.add('show');
-
-            clearTimeout(toastTimeout);
-            toastTimeout = setTimeout(() => {
+            setTimeout(() => {
                 toast.classList.remove('show');
-            }, 4000);
+            }, 3000);
         }
 
-        function sifirlamaGonder() {
-            const sicil = document.getElementById('sicil-no').value.trim();
-            const email = document.getElementById('email').value.trim();
+        // Tema Değiştirme Fonksiyonu
+        function toggleTheme() {
+            const themeStyle = document.getElementById('theme-style');
+            if (themeStyle.getAttribute('href').includes('light')) {
+                themeStyle.setAttribute('href', '/static/css/forgot_dark.css');
+                localStorage.setItem('user-theme', 'dark');
+            } else {
+                themeStyle.setAttribute('href', '/static/css/forgot_light.css');
+                localStorage.setItem('user-theme', 'light');
+            }
+        }
 
-            if (!sicil || !email) {
-                showNotification("Lütfen sicil numaranızı ve e-posta adresinizi eksiksiz girin.", "error");
+        // Şifre Sıfırlama İsteği Gönderme Fonksiyonu
+        async function handleForgotPassword(event) {
+            event.preventDefault();
+
+            const sicil_no = document.getElementById('sicil-no').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const btn = document.querySelector('.login-btn'); // Sınıf adını düzelttik
+
+            if (!sicil_no || !email) {
+                showNotification("Lütfen sicil numarası ve e-posta adresinizi girin.", "error");
                 return;
             }
 
-            showNotification("Sıfırlama bağlantısı e-posta adresinize gönderildi.", "success");
-            
-            document.getElementById('sicil-no').value = "";
-            document.getElementById('email').value = "";
+            const originalText = btn.innerText;
+            btn.innerText = "Gönderiliyor...";
+            btn.disabled = true;
+
+            const formData = new FormData();
+            formData.append("sicil", sicil_no);
+            formData.append("email", email);
+
+            try {
+                const response = await fetch('/sifre-sifirlama-talep', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showNotification(data.mesaj, "success");
+                    
+                    document.getElementById('sicil-no').value = '';
+                    document.getElementById('email').value = '';
+                    setTimeout(() => {
+                        window.location.href = "/";
+                    }, 2000);
+                } else {
+                    showNotification(data.detail || "Bir hata oluştu, lütfen tekrar deneyin.", "error");
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error("Hata:", error);
+                showNotification("Sunucuya ulaşılamıyor. Lütfen bağlantınızı kontrol edin.", "error");
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
         }
     </script>
 

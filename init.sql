@@ -144,6 +144,40 @@ CREATE TABLE kullanici_yetki_guncelleme_loglari (
     FOREIGN KEY (yeni_rol_id) REFERENCES roller(id)
 );
 
+-- ESNEK VE İLİŞKİSEL SMTP AYARLARI TABLOSU
+CREATE TABLE smtp_ayarlari (
+    id SERIAL PRIMARY KEY,
+    firma_id INT,
+    rol_id INT,
+    rapor_kodu VARCHAR(100),
+    sunucu VARCHAR(255) NOT NULL,
+    port INT NOT NULL,
+    kullanici_adi VARCHAR(255) NOT NULL,
+    sifre VARCHAR(255) NOT NULL,
+    gonderici_adi VARCHAR(255),
+    varsayilan_mi BOOLEAN DEFAULT FALSE,
+    olusturma_guncelleme_zamani TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    olusturan_guncelleyen_sicil VARCHAR(20),
+    FOREIGN KEY (firma_id) REFERENCES firma(id),
+    FOREIGN KEY (rol_id) REFERENCES roller(id),
+    FOREIGN KEY (olusturan_guncelleyen_sicil) REFERENCES kullanicilar(sicil)
+);
+
+-- SMTP AYARLARI LOG TABLOSU
+CREATE TABLE smtp_ayarlari_loglari (
+    id SERIAL PRIMARY KEY,
+    smtp_ayar_id INT,
+    islem_turu VARCHAR(50) NOT NULL, -- Örn: 'EKLEME', 'GUNCELLEME', 'SILME'
+    eski_sunucu VARCHAR(255),
+    yeni_sunucu VARCHAR(255),
+    eski_kullanici_adi VARCHAR(255),
+    yeni_kullanici_adi VARCHAR(255),
+    islem_zamani TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    islem_yapan_kullanici_sicil VARCHAR(20),
+    FOREIGN KEY (smtp_ayar_id) REFERENCES smtp_ayarlari(id),
+    FOREIGN KEY (islem_yapan_kullanici_sicil) REFERENCES kullanicilar(sicil)
+);
+
 INSERT INTO firma (firma_kodu, firma_adi, olusturan_guncelleyen_sicil) 
 VALUES ('F001', 'Yönetim Merkezi', 'SYSTEM');
 
