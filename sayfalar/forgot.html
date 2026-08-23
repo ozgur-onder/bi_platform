@@ -3,40 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>İş Zekası Platformu</title>
+    <title>Şifre Sıfırlama - İş Zekası Platformu</title>
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'><path d='M3 3h2v18H3V3zm6 8h2v10H9V11zm6-5h2v15h-2V6zm6 4h2v11h-2v-11z'/></svg>">
-    <link id="theme-style" rel="stylesheet" href="static/css/light.css">
+    
+    <link id="theme-style" rel="stylesheet" href="../static/css/forgot_light.css">
 </head>
 <body>
 
     <div class="split-layout">
         
-        <!-- Sol Taraf: Tam Ekran Kesintisiz Marka Alanı -->
         <div class="brand-panel">
             <div class="brand-content">
                 <svg class="brand-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M18 20V10M12 20V4M6 20v-6"/>
                 </svg>
                 <h1>İş Zekası Platformu</h1>
-                <p>Yerli ve milli iş zekası çözümü.</p>
+                <p>Yerli ve milli iş zekası çözümü</p>
             </div>
         </div>
 
-        <!-- Sağ Taraf: Form ve Yüzen Kontroller -->
         <div class="form-panel">
             
-            <!-- Sağ Üstte Yüzen Tema Butonu -->
             <div class="top-controls">
                 <button class="theme-toggle" onclick="toggleTheme()" title="Temayı Değiştir">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
                 </button>
             </div>
 
-            <!-- Merkezdeki Giriş Formu -->
             <div class="form-wrapper">
-                <h2>Hesabınıza Giriş Yapın</h2>
-                <p class="subtitle">Devam etmek için bilgilerinizi girin.</p>
+                <h2>Şifrenizi mi Unuttunuz?</h2>
+                <p class="subtitle">E-posta adresinizi girin, size bir sıfırlama bağlantısı gönderelim.</p>
 
                 <div class="input-group">
                     <label for="email">E-posta Adresi</label>
@@ -46,23 +43,14 @@
                     </div>
                 </div>
                 
-                <div class="input-group">
-                    <label for="password">Şifre</label>
-                    <div class="input-wrapper">
-                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                        <input type="password" id="password" placeholder="••••••••" required>
-                    </div>
-                </div>
-                
-                <button class="login-btn" onclick="alert('Motor bağlantısı bekleniyor...')">Giriş Yap</button>
+                <button class="login-btn" onclick="alert('Motor bağlandığında mail gönderilecek.')">Sıfırlama Bağlantısı Gönder</button>
 
-                <!-- Şifremi Unuttum Linki Butonun Altında -->
+                <!-- Ana dizindeki index.html dosyasına dönüş yolu güncellendi -->
                 <div class="forgot-password">
-                    <a href="sayfalar/forgot.html" class="forgot-password-link">Şifremi unuttum</a>
+                    <a href="../index.html" class="forgot-password-link">← Giriş ekranına dön</a>
                 </div>
             </div>
 
-            <!-- Sağ Altta Yüzen Alt Bilgi (Footer) -->
             <div class="panel-footer">
                 &copy; 2026 İş Zekası Platformu. Tüm hakları saklıdır.
             </div>
@@ -73,7 +61,6 @@
     <script>
         const themeStyle = document.getElementById('theme-style');
         
-        // Akıllı Tema Seçimi
         const savedTheme = localStorage.getItem('user-theme');
         const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         
@@ -83,7 +70,7 @@
         }
 
         function applyTheme(theme) {
-            themeStyle.setAttribute('href', `static/css/${theme}.css`);
+            themeStyle.setAttribute('href', `../static/css/forgot_${theme}.css`);
         }
         
         applyTheme(currentTheme);

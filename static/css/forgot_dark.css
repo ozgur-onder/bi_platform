@@ -1,0 +1,221 @@
+/* static/css/forgot_dark.css */
+:root {
+    --arkaplan-sol: #0f172a;
+    --arkaplan-sag: #1e293b;
+    --yazi-renk: #f8fafc;
+    --yazi-ikincil: #94a3b8;
+    --input-arkaplan: #0f172a;
+    --input-kenarlik: #334155;
+    --buton-arkaplan: #2563eb;
+    --buton-hover: #1d4ed8;
+    --buton-yazi: #ffffff;
+    --link-renk: #94a3b8;
+    --link-hover: #60a5fa;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--arkaplan-sag);
+    color: var(--yazi-renk);
+    height: 100vh;
+    overflow: hidden;
+}
+
+.split-layout {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+}
+
+.brand-panel {
+    flex: 1;
+    background-color: var(--arkaplan-sol);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    text-align: center;
+    border-right: 1px solid var(--input-kenarlik);
+}
+
+.brand-content {
+    max-width: 400px;
+}
+
+.brand-logo {
+    width: 72px;
+    height: 72px;
+    color: var(--buton-arkaplan);
+    margin-bottom: 24px;
+}
+
+.brand-panel h1 {
+    font-size: 34px;
+    margin-bottom: 16px;
+    font-weight: 700;
+    color: var(--yazi-renk);
+    letter-spacing: -0.5px;
+}
+
+.brand-panel p {
+    font-size: 16px;
+    color: var(--yazi-ikincil);
+    line-height: 1.6;
+}
+
+.form-panel {
+    flex: 1.2;
+    background-color: var(--arkaplan-sag);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+}
+
+.top-controls {
+    position: absolute;
+    top: 30px;
+    right: 40px;
+}
+
+.theme-toggle {
+    background: none;
+    border: none;
+    color: var(--yazi-ikincil);
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.theme-toggle:hover {
+    background-color: var(--arkaplan-sol);
+    color: var(--yazi-renk);
+}
+
+.theme-toggle svg {
+    width: 22px;
+    height: 22px;
+}
+
+.form-wrapper {
+    width: 100%;
+    max-width: 380px;
+}
+
+.form-wrapper h2 {
+    font-size: 28px;
+    margin: 0 0 8px 0;
+    font-weight: 600;
+}
+
+.subtitle {
+    color: var(--yazi-ikincil);
+    margin-top: 0;
+    margin-bottom: 32px;
+    font-size: 15px;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--yazi-ikincil);
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    left: 14px;
+    width: 20px;
+    height: 20px;
+    color: var(--yazi-ikincil);
+}
+
+.input-wrapper input {
+    width: 100%;
+    padding: 14px 14px 14px 44px;
+    background-color: var(--input-arkaplan);
+    border: 1px solid var(--input-kenarlik);
+    border-radius: 8px;
+    color: var(--yazi-renk);
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-wrapper input:focus {
+    border-color: var(--buton-arkaplan);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+.login-btn {
+    width: 100%;
+    display: block;
+    margin: 30px 0 16px 0;
+    padding: 14px;
+    background-color: var(--buton-arkaplan);
+    color: var(--buton-yazi);
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.login-btn:hover {
+    background-color: var(--buton-hover);
+}
+
+.forgot-password {
+    text-align: center;
+}
+
+.forgot-password-link {
+    color: var(--link-renk);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.forgot-password-link:hover {
+    color: var(--link-hover);
+}
+
+.panel-footer {
+    position: absolute;
+    bottom: 30px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--yazi-ikincil);
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    body { overflow: auto; }
+    .split-layout { flex-direction: column; height: auto; }
+    .brand-panel { padding: 40px 20px; border-right: none; border-bottom: 1px solid var(--input-kenarlik); }
+    .form-panel { padding: 40px 20px 100px 20px; }
+    .top-controls { top: 20px; right: 20px; }
+    .panel-footer { bottom: 20px; }
+}
