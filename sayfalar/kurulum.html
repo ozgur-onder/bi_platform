@@ -39,12 +39,79 @@
             text-align: center;
         }
 
-        .input-group { margin-bottom: 10px !important; }
-        .row-group { margin-bottom: 10px !important; gap: 10px; display: flex; }
+        .input-group { margin-bottom: 12px !important; }
+        .row-group { margin-bottom: 12px !important; gap: 10px; display: flex; }
         .half-width { flex: 1; }
         h2 { margin-bottom: 5px !important; margin-top: 0 !important; }
-        .subtitle { margin-bottom: 15px !important; }
+        
+        .step-indicator {
+            font-size: 0.85rem;
+            color: #3b82f6;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: block;
+        }
 
+        /* --- YENİ BİLGİ KUTUSU TASARIMI --- */
+        .info-box {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid #3b82f6;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            line-height: 1.5;
+            border-radius: 0 6px 6px 0;
+        }
+        :root[data-theme="light"] .info-box {
+            color: #334155;
+            background-color: #eff6ff;
+        }
+
+        /* --- SİHİRBAZ (WIZARD) GEÇİŞLERİ --- */
+        .step-container {
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+        .step-container.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- BUTON GRUBU --- */
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+        }
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid #475569;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            flex: 1;
+            transition: 0.3s;
+        }
+        .btn-secondary:hover { background: rgba(255, 255, 255, 0.05); }
+        :root[data-theme="light"] .btn-secondary { color: #1e293b; border-color: #cbd5e1; }
+        :root[data-theme="light"] .btn-secondary:hover { background: rgba(0, 0, 0, 0.03); }
+        .login-btn { flex: 2; }
+
+        /* --- INPUT NUMBER OKLARINI GİZLEME --- */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        input[type=number] {
+            -moz-appearance: textfield; /* Firefox için */
+        }
+
+        /* Diğer Tasarımlar */
         .password-rules {
             font-size: 0.70rem;
             margin-top: 5px;
@@ -74,53 +141,32 @@
             display: flex;
         }
         .toggle-btn:hover { opacity: 1; }
-        
         .no-icon-input { padding-left: 10px !important; }
+        .login-btn:disabled { opacity: 0.7; cursor: not-allowed; }
 
-        .login-btn:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
-
-        /* --- ÖZEL BİLDİRİM (TOAST) TASARIMI --- */
+        /* --- TOAST --- */
         #customToast {
             position: fixed;
-            top: 20px;
-            left: 50%;
+            top: 20px; left: 50%;
             transform: translateX(-50%) translateY(-100px);
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: white;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 12px 24px; border-radius: 8px;
+            font-size: 0.9rem; font-weight: 500; color: white;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             z-index: 9999;
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            display: flex; align-items: center; gap: 10px;
         }
-        
-        #customToast.show {
-            transform: translateX(-50%) translateY(0);
-        }
-
+        #customToast.show { transform: translateX(-50%) translateY(0); }
         .toast-error { background-color: #ef4444; border: 1px solid #dc2626; }
         .toast-success { background-color: #10b981; border: 1px solid #059669; }
-        
         .toast-icon { width: 20px; height: 20px; }
 
-        /* --- AUTOFILL (OTOMATİK DOLDURMA) SARI ARKA PLAN DÜZELTMESİ --- */
-        input:-webkit-autofill,
-        input:-webkit-autofill:hover, 
-        input:-webkit-autofill:focus, 
-        input:-webkit-autofill:active {
-            -webkit-box-shadow: 0 0 0 30px #0f172a inset !important; /* Koyu tema arka planına zorla */
-            -webkit-text-fill-color: white !important; /* Yazı rengini beyaza zorla */
+        /* --- AUTOFILL --- */
+        input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus, input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px #0f172a inset !important;
+            -webkit-text-fill-color: white !important; 
             transition: background-color 5000s ease-in-out 0s;
         }
-
-        /* Açık tema (light) için autofill düzeltmesi (Tema değiştiğinde tetiklenir) */
         :root[data-theme="light"] input:-webkit-autofill {
             -webkit-box-shadow: 0 0 0 30px white inset !important;
             -webkit-text-fill-color: #1e293b !important;
@@ -129,7 +175,6 @@
 </head>
 <body>
 
-    <!-- Özel Bildirim Alanı -->
     <div id="customToast">
         <svg id="toastIcon" class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
         <span id="toastMessage">Bildirim mesajı buraya gelecek</span>
@@ -143,11 +188,11 @@
                     <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
                 </svg>
                 <h1>Kurulum Sihirbazı</h1>
-                <p>Platformunuzu ayağa kaldırmak için ilk yönetici hesabını oluşturun.</p>
+                <p>Platformunuzu ayağa kaldırmak için yönetici hesabınızı ve mail ayarlarınızı yapılandırın.</p>
             </div>
         </div>
 
-        <div class="form-panel">
+        <div class="form-panel" style="overflow-y: auto !important; padding-right: 15px;">
             
             <div class="top-controls">
                 <button class="theme-toggle" onclick="toggleTheme()" title="Temayı Değiştir">
@@ -157,69 +202,123 @@
 
             <div class="form-wrapper">
                 <h2>Hoş Geldiniz</h2>
-                <p class="subtitle">Sistem yöneticisi (Admin) profilinizi tanımlayın.</p>
-
-                <div class="row-group">
-                    <div class="input-group half-width">
-                        <label for="ad">Ad</label>
-                        <div class="input-wrapper">
-                            <input type="text" id="ad" class="no-icon-input" autocomplete="new-password" placeholder="Örn: Ahmet" required>
-                        </div>
-                    </div>
-                    
-                    <div class="input-group half-width">
-                        <label for="soyad">Soyad</label>
-                        <div class="input-wrapper">
-                            <input type="text" id="soyad" class="no-icon-input" autocomplete="new-password" placeholder="Örn: Yılmaz" required>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row-group">
-                    <div class="input-group half-width">
-                        <label for="sicil-no">Sicil Numarası</label>
-                        <div class="input-wrapper">
-                            <input type="text" id="sicil-no" class="no-icon-input" autocomplete="new-password" placeholder="Örn: 1001" required>
-                        </div>
-                    </div>
-
-                    <div class="input-group half-width">
-                        <label for="email">E-posta</label>
-                        <div class="input-wrapper">
-                            <input type="email" id="email" class="no-icon-input" autocomplete="new-password" placeholder="admin@sirket.com" required>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="input-group">
-                    <label for="password">Yönetici Parolası</label>
-                    <div class="input-wrapper" style="position: relative;">
-                        <input type="password" id="password" class="no-icon-input" autocomplete="new-password" placeholder="Güçlü bir parola belirleyin" style="padding-right: 40px;" oninput="parolaKontrolEt()" required>
-                        <button type="button" class="toggle-btn" onclick="sifreGosterGizle('password', 'eye1')">
-                            <svg id="eye1" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                        </button>
-                    </div>
-                    <ul class="password-rules" id="rulesList">
-                        <li id="rule-len" class="rule-fail">✖ En az 12 karakter</li>
-                        <li id="rule-upper" class="rule-fail">✖ En az 1 büyük harf</li>
-                        <li id="rule-lower" class="rule-fail">✖ En az 1 küçük harf</li>
-                        <li id="rule-num" class="rule-fail">✖ En az 1 rakam</li>
-                        <li id="rule-spec" class="rule-fail">✖ En az 1 özel karakter</li>
-                    </ul>
-                </div>
-
-                <div class="input-group">
-                    <label for="password-confirm">Parolayı Onayla</label>
-                    <div class="input-wrapper" style="position: relative;">
-                        <input type="password" id="password-confirm" class="no-icon-input" autocomplete="new-password" placeholder="Parolayı tekrar girin" style="padding-right: 40px;" oninput="parolaEslesmeKontrolEt()" required>
-                        <button type="button" class="toggle-btn" onclick="sifreGosterGizle('password-confirm', 'eye2')">
-                            <svg id="eye2" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                        </button>
-                    </div>
-                    <p id="match-msg" style="font-size: 0.70rem; margin-top: 5px; margin-bottom: 0; display: none;"></p>
-                </div>
                 
-                <button class="login-btn" id="submitBtn" style="margin-top: 5px;" onclick="kurulumuTamamla()">Sistemi Başlat</button>
+                <!-- ================= ADIM 1: YÖNETİCİ BİLGİLERİ ================= -->
+                <div id="step-1" class="step-container active">
+                    <span class="step-indicator">Adım 1/2: Sistem Yöneticisi</span>
+                    
+                    <div class="info-box">
+                        <strong>Sistem Yöneticisi Kullanıcısı Eklemek;</strong> Firma, rol ve diğer kullanıcı tanımlarını yapmak için gereklidir. 
+                    </div>
+
+                    <div class="row-group">
+                        <div class="input-group half-width">
+                            <label for="ad">Ad</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="ad" class="no-icon-input" autocomplete="new-password" placeholder="Örn: Ahmet" required>
+                            </div>
+                        </div>
+                        <div class="input-group half-width">
+                            <label for="soyad">Soyad</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="soyad" class="no-icon-input" autocomplete="new-password" placeholder="Örn: Yılmaz" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row-group">
+                        <div class="input-group half-width">
+                            <label for="sicil-no">Sicil Numarası</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="sicil-no" class="no-icon-input" autocomplete="new-password" placeholder="Örn: 1001" required>
+                            </div>
+                        </div>
+                        <div class="input-group half-width">
+                            <label for="email">E-posta</label>
+                            <div class="input-wrapper">
+                                <input type="email" id="email" class="no-icon-input" autocomplete="new-password" placeholder="admin@sirket.com" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="password">Yönetici Parolası</label>
+                        <div class="input-wrapper" style="position: relative;">
+                            <input type="password" id="password" class="no-icon-input" autocomplete="new-password" placeholder="Güçlü bir parola belirleyin" style="padding-right: 40px;" oninput="parolaKontrolEt()" required>
+                            <button type="button" class="toggle-btn" onclick="sifreGosterGizle('password', 'eye1')">
+                                <svg id="eye1" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            </button>
+                        </div>
+                        <ul class="password-rules" id="rulesList">
+                            <li id="rule-len" class="rule-fail">✖ En az 12 karakter</li>
+                            <li id="rule-upper" class="rule-fail">✖ En az 1 büyük harf</li>
+                            <li id="rule-lower" class="rule-fail">✖ En az 1 küçük harf</li>
+                            <li id="rule-num" class="rule-fail">✖ En az 1 rakam</li>
+                            <li id="rule-spec" class="rule-fail">✖ En az 1 özel karakter</li>
+                        </ul>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="password-confirm">Parolayı Onayla</label>
+                        <div class="input-wrapper" style="position: relative;">
+                            <input type="password" id="password-confirm" class="no-icon-input" autocomplete="new-password" placeholder="Parolayı tekrar girin" style="padding-right: 40px;" oninput="parolaEslesmeKontrolEt()" required>
+                            <button type="button" class="toggle-btn" onclick="sifreGosterGizle('password-confirm', 'eye2')">
+                                <svg id="eye2" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            </button>
+                        </div>
+                        <p id="match-msg" style="font-size: 0.70rem; margin-top: 5px; margin-bottom: 0; display: none;"></p>
+                    </div>
+
+                    <button class="login-btn" style="width: 100%; margin-top: 10px;" onclick="validateStep1()">İleri ➔</button>
+                </div>
+
+                <!-- ================= ADIM 2: SMTP AYARLARI ================= -->
+                <div id="step-2" class="step-container">
+                    <span class="step-indicator">Adım 2/2: Mail (SMTP) Ayarları</span>
+                    
+                    <div class="info-box">
+                        <strong>Otomatik mail gönderimi</strong> (şifre sıfırlama, rapor iletimi vb.) yapılmasını sağlayan hesap bilgilerinin girilmelidir.
+                    </div>
+
+                    <div class="row-group">
+                        <div class="input-group half-width">
+                            <label for="smtp-sunucu">SMTP Sunucusu</label>
+                            <div class="input-wrapper">
+                                <input type="text" id="smtp-sunucu" class="no-icon-input" autocomplete="off" placeholder="Örn: mail.sirket.com" required>
+                            </div>
+                        </div>
+                        <div class="input-group half-width">
+                            <label for="smtp-port">SMTP Portu</label>
+                            <div class="input-wrapper">
+                                <input type="number" id="smtp-port" class="no-icon-input" autocomplete="off" placeholder="Örn: 465" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row-group">
+                        <div class="input-group half-width">
+                            <label for="smtp-email">Gönderici E-Posta</label>
+                            <div class="input-wrapper">
+                                <input type="email" id="smtp-email" class="no-icon-input" autocomplete="off" placeholder="Örn: no-reply@sirket.com" required>
+                            </div>
+                        </div>
+                        <div class="input-group half-width">
+                            <label for="smtp-sifre">E-Posta Şifresi</label>
+                            <div class="input-wrapper" style="position: relative;">
+                                <input type="password" id="smtp-sifre" class="no-icon-input" autocomplete="new-password" placeholder="Mail şifreniz" style="padding-right: 40px;" required>
+                                <button type="button" class="toggle-btn" onclick="sifreGosterGizle('smtp-sifre', 'eye3')">
+                                    <svg id="eye3" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn-secondary" onclick="goBack()">← Geri Dön</button>
+                        <button class="login-btn" id="submitBtn" onclick="kurulumuTamamla()">Sistemi Başlat</button>
+                    </div>
+                </div>
+
             </div>
 
             <div class="panel-footer">
@@ -236,7 +335,6 @@
                 t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
                 localStorage.setItem('user-theme', t);
             }
-            // Tema değişkenini CSS Autofill seçicisi için html etiketine yaz
             document.documentElement.setAttribute('data-theme', t);
         }
 
@@ -252,7 +350,6 @@
         }
         initTheme();
 
-        // -- BİLDİRİM FONKSİYONU --
         let toastTimeout;
         function showNotification(message, type = 'error') {
             const toast = document.getElementById('customToast');
@@ -293,7 +390,6 @@
         
         function parolaKontrolEt() {
             const p = document.getElementById('password').value;
-            
             const checks = {
                 'rule-len': p.length >= 12,
                 'rule-upper': /[A-Z]/.test(p),
@@ -303,7 +399,6 @@
             };
 
             let allValid = true;
-
             for (const [id, passed] of Object.entries(checks)) {
                 const el = document.getElementById(id);
                 if (passed) {
@@ -328,7 +423,6 @@
                 msg.style.display = 'none';
                 return;
             }
-
             msg.style.display = 'block';
             if (p1 === p2) {
                 msg.innerText = "✔ Parolalar eşleşiyor.";
@@ -339,7 +433,8 @@
             }
         }
 
-        async function kurulumuTamamla() {
+        // --- SİHİRBAZ GEÇİŞ FONKSİYONLARI ---
+        function validateStep1() {
             const ad = document.getElementById('ad').value.trim();
             const soyad = document.getElementById('soyad').value.trim();
             const sicil_no = document.getElementById('sicil-no').value.trim();
@@ -348,17 +443,42 @@
             const p2 = document.getElementById('password-confirm').value;
 
             if (!ad || !soyad || !sicil_no || !email || !p1 || !p2) {
-                showNotification("Lütfen tüm alanları eksiksiz doldurun.", "error");
+                showNotification("Lütfen tüm yönetici bilgilerini eksiksiz doldurun.", "error");
                 return;
             }
-
             if (!isPasswordValid) {
                 showNotification("Lütfen tüm güvenlik kurallarını karşılayan bir parola belirleyin.", "error");
                 return;
             }
-
             if (p1 !== p2) {
                 showNotification("Girdiğiniz parolalar eşleşmiyor.", "error");
+                return;
+            }
+
+            document.getElementById('step-1').classList.remove('active');
+            document.getElementById('step-2').classList.add('active');
+        }
+
+        function goBack() {
+            document.getElementById('step-2').classList.remove('active');
+            document.getElementById('step-1').classList.add('active');
+        }
+
+        // --- KURULUMU TAMAMLAMA ---
+        async function kurulumuTamamla() {
+            const ad = document.getElementById('ad').value.trim();
+            const soyad = document.getElementById('soyad').value.trim();
+            const sicil_no = document.getElementById('sicil-no').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const p1 = document.getElementById('password').value;
+            
+            const smtp_sunucu = document.getElementById('smtp-sunucu').value.trim();
+            const smtp_port = document.getElementById('smtp-port').value.trim();
+            const smtp_email = document.getElementById('smtp-email').value.trim();
+            const smtp_sifre = document.getElementById('smtp-sifre').value;
+
+            if (!smtp_sunucu || !smtp_port || !smtp_email || !smtp_sifre) {
+                showNotification("Lütfen tüm mail ayarlarını eksiksiz doldurun.", "error");
                 return;
             }
 
@@ -373,6 +493,11 @@
             formData.append("sicil_no", sicil_no); 
             formData.append("email", email); 
             formData.append("sifre", p1);
+            
+            formData.append("smtp_sunucu", smtp_sunucu);
+            formData.append("smtp_port", smtp_port);
+            formData.append("smtp_email", smtp_email);
+            formData.append("smtp_sifre", smtp_sifre);
 
             try {
                 const response = await fetch('/kurulum-tamamla', {
@@ -387,7 +512,8 @@
                         window.location.href = "/";
                     }, 1500);
                 } else {
-                    showNotification("Kurulum sırasında sunucu hatası oluştu.", "error");
+                    const errorData = await response.json();
+                    showNotification(errorData.detail || "Kurulum sırasında sunucu hatası oluştu.", "error");
                     btn.innerText = originalText;
                     btn.disabled = false;
                 }
