@@ -94,6 +94,21 @@
             applyTheme(newTheme);
             localStorage.setItem('user-theme', newTheme);
         }
+
+        async function sayfaYukle(sayfaAdi) {
+            try {
+                // Arka plandan FastAPI'ye istek atıp sayfanın kodunu alıyoruz
+                const response = await fetch('/bilesen/' + sayfaAdi);
+                const html = await response.text();
+                
+                // Adres çubuğunu hiç değiştirmeden ekrandaki her şeyi yeni kodla değiştiriyoruz
+                document.open();
+                document.write(html);
+                document.close();
+            } catch (error) {
+                console.error("Sayfa yüklenirken hata oluştu:", error);
+            }
+        }
     </script>
 
 </body>
