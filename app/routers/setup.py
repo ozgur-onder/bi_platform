@@ -18,16 +18,15 @@ async def kurulum_yap(
     smtp_port: int = Form(...),
     smtp_email: str = Form(...),
     smtp_sifre: str = Form(...),
+    smtp_gonderici: str = Form(...),
     db: Session = Depends(get_db)
 ):
-    # 1. Sistemin daha önce kurulup kurulmadığını kontrol et
     sayi = db.execute(text("SELECT COUNT(*) FROM kullanicilar")).scalar()
     if sayi > 0:
         raise HTTPException(status_code=400, detail="Sistem zaten kurulu.")
         
     hashed_sifre = get_password_hash(sifre)
         
-    # 2. Ana Yönetici Kullanıcıyı Kaydet
     db.execute(
         text("""
             INSERT INTO kullanicilar (sicil, ad, soyad, email, parola, olusturan_kullanici_sicil) 
@@ -36,7 +35,6 @@ async def kurulum_yap(
         {"sicil": sicil_no, "ad": ad, "soyad": soyad, "email": email, "sifre": hashed_sifre}
     )
     
-    # 3. Yöneticiye 'Sistem Yöneticisi' (1) rolünü ve 'Yönetim Merkezi' (1) firmasını ata
     db.execute(
         text("""
             INSERT INTO kullanici_yetkileri (sicil, firma_id, rol_id, tanimlayan_kullanici_sicil) 
@@ -45,12 +43,13 @@ async def kurulum_yap(
         {"sicil": sicil_no}
     )
 
-    # 4. SMTP Ayarlarını sistemin varsayılanı olarak kaydet ve oluşturulan ID'yi döndür
+    # Firma, Rol ve Rapor Koduna varsayılan '1' değeri atanıyor
+    # Gönderici adı (gonderici) HTML'deki formdan alınıp sisteme gömülüyor
     result = db.execute(
         text("""
             INSERT INTO smtp_ayarlari 
-            (sunucu, port, kullanici_adi, sifre, varsayilan_mi, olusturan_guncelleyen_sicil) 
-            VALUES (:sunucu, :port, :kullanici, :s_sifre, TRUE, :sicil)
+            (firma_id, rol_id, rapor_kodu, sunucu, port, kullanici_adi, sifre, gonderici_adi, varsayilan_mi, olusturan_guncelleyen_sicil) 
+            VALUES (1, 1, '1', :sunucu, :port, :kullanici, :s_sifre, :gonderici, TRUE, :sicil)
             RETURNING id
         """),
         {
@@ -58,12 +57,12 @@ async def kurulum_yap(
             "port": smtp_port, 
             "kullanici": smtp_email, 
             "s_sifre": smtp_sifre,
+            "gonderici": smtp_gonderici,
             "sicil": sicil_no
         }
     )
     smtp_id = result.scalar()
 
-    # 5. SMTP işlemini log tablosuna kaydet
     db.execute(
         text("""
             INSERT INTO smtp_ayarlari_loglari 

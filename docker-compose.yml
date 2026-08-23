@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: ozgur.onder
       POSTGRES_PASSWORD: BZrf5399!
       POSTGRES_DB: bi_veritabani
-      TZ: Europe/Istanbul # BUNU EKLEDİK
+      TZ: Europe/Istanbul
     ports:
       - "5880:5432"
     volumes:
