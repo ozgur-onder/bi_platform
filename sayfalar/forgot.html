@@ -13,16 +13,18 @@
 
     <div class="split-layout">
         
+        <!-- Sol Taraf: Marka Alanı -->
         <div class="brand-panel">
             <div class="brand-content">
                 <svg class="brand-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M18 20V10M12 20V4M6 20v-6"/>
                 </svg>
                 <h1>İş Zekası Platformu</h1>
-                <p>Yerli ve milli iş zekası çözümü</p>
+                <p>Yerli ve milli iş zekası çözümü.</p>
             </div>
         </div>
 
+        <!-- Sağ Taraf: Form ve Kontroller -->
         <div class="form-panel">
             
             <div class="top-controls">
@@ -31,21 +33,40 @@
                 </button>
             </div>
 
+            <!-- Merkezdeki Şifre Sıfırlama Formu -->
             <div class="form-wrapper">
                 <h2>Şifrenizi mi Unuttunuz?</h2>
-                <p class="subtitle">E-posta adresinizi girin, size bir sıfırlama bağlantısı gönderelim.</p>
+                <p class="subtitle">Sıfırlama bağlantısı için sicil numaranızı ve e-posta adresinizi girin.</p>
 
+                <!-- SİCİL NUMARASI ALANI (ÜSTE ALINDI) -->
+                <div class="input-group">
+                    <label for="sicil-no">Sicil Numarası</label>
+                    <div class="input-wrapper">
+                        <!-- Personel Kartı / Kimlik İkonu -->
+                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                            <circle cx="9" cy="11" r="2"></circle>
+                            <path d="M6.17 15a3 3 0 0 1 5.66 0"></path>
+                            <path d="M16 10h2"></path>
+                            <path d="M16 14h2"></path>
+                        </svg>
+                        <input type="text" id="sicil-no" placeholder="Örn: 123456" required>
+                    </div>
+                </div>
+
+                <!-- E-POSTA ADRESİ ALANI (ALTA ALINDI) -->
                 <div class="input-group">
                     <label for="email">E-posta Adresi</label>
                     <div class="input-wrapper">
+                        <!-- Zarf İkonu -->
                         <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
                         <input type="email" id="email" placeholder="kurulum@sistem.com" required>
                     </div>
                 </div>
                 
-                <button class="login-btn" onclick="alert('Motor bağlandığında mail gönderilecek.')">Sıfırlama Bağlantısı Gönder</button>
+                <button class="login-btn" onclick="alert('Motor bağlandığında sicil no ve e-posta kontrolü yapılıp mail gönderilecek.')">Sıfırlama Bağlantısı Gönder</button>
 
-                <!-- Ana dizindeki index.html dosyasına dönüş yolu güncellendi -->
+                <!-- Giriş Ekranına Geri Dön Linki -->
                 <div class="forgot-password">
                     <a href="../index.html" class="forgot-password-link">← Giriş ekranına dön</a>
                 </div>
