@@ -143,3 +143,10 @@ CREATE TABLE kullanici_yetki_guncelleme_loglari (
     FOREIGN KEY (eski_rol_id) REFERENCES roller(id),
     FOREIGN KEY (yeni_rol_id) REFERENCES roller(id)
 );
+
+INSERT INTO firma (firma_kodu, firma_adi, olusturan_guncelleyen_sicil) 
+VALUES ('F001', 'Yönetim Merkezi', 'SYSTEM');
+
+-- 2. Sistem Yöneticisi Rolünün Tanımlanması (İlk kullanıcı bu rolü alacak)
+INSERT INTO roller (rol_kodu, rol_adi, olusturan_guncelleyen_sicil) 
+VALUES (1, 'Sistem Yöneticisi', 'SYSTEM');
