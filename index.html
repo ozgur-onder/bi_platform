@@ -8,7 +8,6 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'><path d='M3 3h2v18H3V3zm6 8h2v10H9V11zm6-5h2v15h-2V6zm6 4h2v11h-2v-11z'/></svg>">
     
     <link id="theme-style" rel="stylesheet" href="/static/css/light.css">
-    <!-- FOUC Önleme: body render edilmeden doğru tema yüklenir -->
     <script>
         (function () {
             var t = localStorage.getItem('user-theme') ||
@@ -18,12 +17,58 @@
             }
         })();
     </script>
+
+    <style>
+        /* --- ÖZEL BİLDİRİM (TOAST) TASARIMI --- */
+        #customToast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            z-index: 9999;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        #customToast.show { transform: translateX(-50%) translateY(0); }
+        .toast-error { background-color: #ef4444; border: 1px solid #dc2626; }
+        .toast-success { background-color: #10b981; border: 1px solid #059669; }
+        .toast-icon { width: 20px; height: 20px; }
+        .login-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        /* --- AUTOFILL SARI ARKA PLAN DÜZELTMESİ --- */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px #0f172a inset !important;
+            -webkit-text-fill-color: white !important;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+
+        :root[data-theme="light"] input:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0 30px white inset !important;
+            -webkit-text-fill-color: #1e293b !important;
+        }
+    </style>
 </head>
 <body>
 
+    <div id="customToast">
+        <svg id="toastIcon" class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+        <span id="toastMessage">Bildirim mesajı buraya gelecek</span>
+    </div>
+
     <div class="split-layout">
         
-        <!-- Sol Taraf: Tam Ekran Kesintisiz Marka Alanı -->
         <div class="brand-panel">
             <div class="brand-content">
                 <svg class="brand-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -34,26 +79,29 @@
             </div>
         </div>
 
-        <!-- Sağ Taraf: Form ve Yüzen Kontroller -->
         <div class="form-panel">
             
-            <!-- Sağ Üstte Yüzen Tema Butonu -->
             <div class="top-controls">
                 <button class="theme-toggle" onclick="toggleTheme()" title="Temayı Değiştir">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
                 </button>
             </div>
 
-            <!-- Merkezdeki Giriş Formu -->
             <div class="form-wrapper">
                 <h2>Hesabınıza Giriş Yapın</h2>
                 <p class="subtitle">Devam etmek için bilgilerinizi girin.</p>
 
                 <div class="input-group">
-                    <label for="email">E-posta Adresi</label>
+                    <label for="kullanici_adi">Sicil Numarası</label>
                     <div class="input-wrapper">
-                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                        <input type="email" id="email" placeholder="Lütfen E-posta Adresinizi Giriniz" required>
+                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                            <circle cx="9" cy="11" r="2"></circle>
+                            <path d="M6.17 15a3 3 0 0 1 5.66 0"></path>
+                            <path d="M16 10h2"></path>
+                            <path d="M16 14h2"></path>
+                        </svg>
+                        <input type="text" id="kullanici_adi" autocomplete="off" placeholder="Lütfen Sicil Numaranızı Giriniz" required>
                     </div>
                 </div>
                 
@@ -61,18 +109,17 @@
                     <label for="password">Şifre</label>
                     <div class="input-wrapper">
                         <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                        <input type="password" id="password" placeholder="••••••••" required>
+                        <input type="password" id="password" autocomplete="new-password" placeholder="••••••••" required>
                     </div>
                 </div>
                 
-                <button class="login-btn" onclick="alert('Motor bağlantısı bekleniyor...')">Giriş Yap</button>
+                <button class="login-btn" id="loginBtn" onclick="girisYap()">Giriş Yap</button>
 
                 <div class="forgot-password">
-                    <a href="#" onclick="sayfaYukle(event, 'sifremi_unuttum')" class="forgot-password-link">Şifremi unuttum</a>
+                    <a href="/bilesen/sifremi_unuttum" class="forgot-password-link">Şifremi unuttum</a>
                 </div>
             </div>
 
-            <!-- Sağ Altta Yüzen Alt Bilgi (Footer) -->
             <div class="panel-footer">
                 &copy; 2026 İş Zekası Platformu. Tüm hakları saklıdır.
             </div>
@@ -81,18 +128,18 @@
     </div>
 
     <script>
-        // Tema localStorage'dan okunur — DOM'a asla bağımlı değiliz
         function initTheme() {
-            if (!localStorage.getItem('user-theme')) {
-                var t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            var t = localStorage.getItem('user-theme');
+            if (!t) {
+                t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
                 localStorage.setItem('user-theme', t);
             }
-            // Tema zaten head'deki FOUC scripti tarafından uygulandı;
-            // burada sadece localStorage'ın dolu olduğunu garantiliyoruz.
+            document.documentElement.setAttribute('data-theme', t);
         }
 
         function applyTheme(theme) {
             document.getElementById('theme-style').setAttribute('href', '/static/css/' + theme + '.css');
+            document.documentElement.setAttribute('data-theme', theme);
         }
 
         function toggleTheme() {
@@ -100,27 +147,73 @@
             localStorage.setItem('user-theme', newTheme);
             applyTheme(newTheme);
         }
-
         initTheme();
 
-        // URL DEĞİŞTİRMEDEN SAYFA YÜKLEME MOTORU
-        async function sayfaYukle(event, sayfaAdi) {
-            event.preventDefault();
+        let toastTimeout;
+        function showNotification(message, type = 'error') {
+            const toast = document.getElementById('customToast');
+            const toastMsg = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            if (type === 'error') {
+                toast.className = 'toast-error';
+                toastIcon.innerHTML = '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>';
+            } else {
+                toast.className = 'toast-success';
+                toastIcon.innerHTML = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>';
+            }
+
+            toastMsg.innerText = message;
+            toast.classList.add('show');
+
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+
+        async function girisYap() {
+            const sicil = document.getElementById('kullanici_adi').value.trim();
+            const pass = document.getElementById('password').value;
+
+            if (!sicil || !pass) {
+                showNotification("Lütfen sicil numaranızı ve şifrenizi girin.", "error");
+                return;
+            }
+
+            const btn = document.getElementById('loginBtn');
+            const originalText = btn.innerText;
+            btn.innerText = "Giriş yapılıyor...";
+            btn.disabled = true;
+
+            const formData = new FormData();
+            formData.append("kullanici_adi", sicil);
+            formData.append("sifre", pass);
+
             try {
-                const response = await fetch('/bilesen/' + sayfaAdi);
-                if (!response.ok) {
-                    throw new Error("Bileşen bulunamadı.");
+                const response = await fetch('/giris-yap', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showNotification(data.mesaj, "success");
+                    setTimeout(() => {
+                        window.location.href = "/platform"; 
+                    }, 1000);
+                } else {
+                    showNotification("Sicil numarası veya şifre hatalı.", "error");
+                    btn.innerText = originalText;
+                    btn.disabled = false;
                 }
-                const html = await response.text();
-                document.open();
-                document.write(html);
-                document.close();
             } catch (error) {
-                console.error("Sayfa yüklenirken hata oluştu:", error);
-                alert("Sayfa yüklenemedi. Lütfen tekrar deneyin.");
+                console.error("Hata:", error);
+                showNotification("Sunucuya bağlanılamadı.", "error");
+                btn.innerText = originalText;
+                btn.disabled = false;
             }
         }
     </script>
-
 </body>
 </html>

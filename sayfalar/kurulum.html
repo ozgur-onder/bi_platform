@@ -109,6 +109,22 @@
         .toast-success { background-color: #10b981; border: 1px solid #059669; }
         
         .toast-icon { width: 20px; height: 20px; }
+
+        /* --- AUTOFILL (OTOMATİK DOLDURMA) SARI ARKA PLAN DÜZELTMESİ --- */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px #0f172a inset !important; /* Koyu tema arka planına zorla */
+            -webkit-text-fill-color: white !important; /* Yazı rengini beyaza zorla */
+            transition: background-color 5000s ease-in-out 0s;
+        }
+
+        /* Açık tema (light) için autofill düzeltmesi (Tema değiştiğinde tetiklenir) */
+        :root[data-theme="light"] input:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0 30px white inset !important;
+            -webkit-text-fill-color: #1e293b !important;
+        }
     </style>
 </head>
 <body>
@@ -147,14 +163,14 @@
                     <div class="input-group half-width">
                         <label for="ad">Ad</label>
                         <div class="input-wrapper">
-                            <input type="text" id="ad" class="no-icon-input" placeholder="Örn: Ahmet" required>
+                            <input type="text" id="ad" class="no-icon-input" autocomplete="new-password" placeholder="Örn: Ahmet" required>
                         </div>
                     </div>
                     
                     <div class="input-group half-width">
                         <label for="soyad">Soyad</label>
                         <div class="input-wrapper">
-                            <input type="text" id="soyad" class="no-icon-input" placeholder="Örn: Yılmaz" required>
+                            <input type="text" id="soyad" class="no-icon-input" autocomplete="new-password" placeholder="Örn: Yılmaz" required>
                         </div>
                     </div>
                 </div>
@@ -163,14 +179,14 @@
                     <div class="input-group half-width">
                         <label for="sicil-no">Sicil Numarası</label>
                         <div class="input-wrapper">
-                            <input type="text" id="sicil-no" class="no-icon-input" placeholder="Örn: 1001" required>
+                            <input type="text" id="sicil-no" class="no-icon-input" autocomplete="new-password" placeholder="Örn: 1001" required>
                         </div>
                     </div>
 
                     <div class="input-group half-width">
                         <label for="email">E-posta</label>
                         <div class="input-wrapper">
-                            <input type="email" id="email" class="no-icon-input" placeholder="admin@sirket.com" required>
+                            <input type="email" id="email" class="no-icon-input" autocomplete="new-password" placeholder="admin@sirket.com" required>
                         </div>
                     </div>
                 </div>
@@ -178,7 +194,7 @@
                 <div class="input-group">
                     <label for="password">Yönetici Parolası</label>
                     <div class="input-wrapper" style="position: relative;">
-                        <input type="password" id="password" class="no-icon-input" placeholder="Güçlü bir parola belirleyin" style="padding-right: 40px;" oninput="parolaKontrolEt()" required>
+                        <input type="password" id="password" class="no-icon-input" autocomplete="new-password" placeholder="Güçlü bir parola belirleyin" style="padding-right: 40px;" oninput="parolaKontrolEt()" required>
                         <button type="button" class="toggle-btn" onclick="sifreGosterGizle('password', 'eye1')">
                             <svg id="eye1" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                         </button>
@@ -195,7 +211,7 @@
                 <div class="input-group">
                     <label for="password-confirm">Parolayı Onayla</label>
                     <div class="input-wrapper" style="position: relative;">
-                        <input type="password" id="password-confirm" class="no-icon-input" placeholder="Parolayı tekrar girin" style="padding-right: 40px;" oninput="parolaEslesmeKontrolEt()" required>
+                        <input type="password" id="password-confirm" class="no-icon-input" autocomplete="new-password" placeholder="Parolayı tekrar girin" style="padding-right: 40px;" oninput="parolaEslesmeKontrolEt()" required>
                         <button type="button" class="toggle-btn" onclick="sifreGosterGizle('password-confirm', 'eye2')">
                             <svg id="eye2" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                         </button>
@@ -215,14 +231,20 @@
 
     <script>
         function initTheme() {
-            if (!localStorage.getItem('user-theme')) {
-                var t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            var t = localStorage.getItem('user-theme');
+            if (!t) {
+                t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
                 localStorage.setItem('user-theme', t);
             }
+            // Tema değişkenini CSS Autofill seçicisi için html etiketine yaz
+            document.documentElement.setAttribute('data-theme', t);
         }
+
         function applyTheme(theme) {
             document.getElementById('theme-style').setAttribute('href', '/static/css/setup_' + theme + '.css');
+            document.documentElement.setAttribute('data-theme', theme);
         }
+
         function toggleTheme() {
             var newTheme = localStorage.getItem('user-theme') === 'dark' ? 'light' : 'dark';
             localStorage.setItem('user-theme', newTheme);
@@ -237,7 +259,6 @@
             const toastMsg = document.getElementById('toastMessage');
             const toastIcon = document.getElementById('toastIcon');
 
-            // İkonu ayarla
             if (type === 'error') {
                 toast.className = 'toast-error';
                 toastIcon.innerHTML = '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>';
@@ -249,7 +270,6 @@
             toastMsg.innerText = message;
             toast.classList.add('show');
 
-            // Önceki zamanlayıcıyı temizle ve 4 saniye sonra kapat
             clearTimeout(toastTimeout);
             toastTimeout = setTimeout(() => {
                 toast.classList.remove('show');
@@ -327,25 +347,21 @@
             const p1 = document.getElementById('password').value;
             const p2 = document.getElementById('password-confirm').value;
 
-            // 1. ZORUNLU ALAN KONTROLÜ
             if (!ad || !soyad || !sicil_no || !email || !p1 || !p2) {
                 showNotification("Lütfen tüm alanları eksiksiz doldurun.", "error");
                 return;
             }
 
-            // 2. PAROLA GÜVENLİK KONTROLÜ
             if (!isPasswordValid) {
                 showNotification("Lütfen tüm güvenlik kurallarını karşılayan bir parola belirleyin.", "error");
                 return;
             }
 
-            // 3. PAROLA EŞLEŞME KONTROLÜ
             if (p1 !== p2) {
                 showNotification("Girdiğiniz parolalar eşleşmiyor.", "error");
                 return;
             }
 
-            // --- TÜM KONTROLLER BAŞARILI ---
             const btn = document.getElementById('submitBtn');
             const originalText = btn.innerText;
             btn.innerText = "Kuruluyor...";
@@ -364,7 +380,6 @@
                 if (response.ok) {
                     const data = await response.json();
                     showNotification(data.mesaj, "success"); 
-                    // Başarı bildirimini okuması için 1.5 saniye bekle, sonra yönlendir
                     setTimeout(() => {
                         window.location.href = "/";
                     }, 1500);

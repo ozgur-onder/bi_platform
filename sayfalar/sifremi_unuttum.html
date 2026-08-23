@@ -38,19 +38,29 @@
             gap: 10px;
         }
         
-        #customToast.show {
-            transform: translateX(-50%) translateY(0);
-        }
-
+        #customToast.show { transform: translateX(-50%) translateY(0); }
         .toast-error { background-color: #ef4444; border: 1px solid #dc2626; }
         .toast-success { background-color: #10b981; border: 1px solid #059669; }
-        
         .toast-icon { width: 20px; height: 20px; }
+
+        /* --- AUTOFILL SARI ARKA PLAN DÜZELTMESİ --- */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px #0f172a inset !important;
+            -webkit-text-fill-color: white !important;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+
+        :root[data-theme="light"] input:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0 30px white inset !important;
+            -webkit-text-fill-color: #1e293b !important;
+        }
     </style>
 </head>
 <body>
 
-    <!-- Özel Bildirim Alanı -->
     <div id="customToast">
         <svg id="toastIcon" class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
         <span id="toastMessage">Bildirim mesajı buraya gelecek</span>
@@ -58,7 +68,6 @@
 
     <div class="split-layout">
         
-        <!-- Sol Taraf: Marka Alanı -->
         <div class="brand-panel">
             <div class="brand-content">
                 <svg class="brand-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -69,7 +78,6 @@
             </div>
         </div>
 
-        <!-- Sağ Taraf: Form ve Kontroller -->
         <div class="form-panel">
             
             <div class="top-controls">
@@ -78,7 +86,6 @@
                 </button>
             </div>
 
-            <!-- Merkezdeki Şifre Sıfırlama Formu -->
             <div class="form-wrapper">
                 <h2>Şifrenizi mi Unuttunuz?</h2>
                 <p class="subtitle">Sıfırlama bağlantısı için sicil numaranızı ve e-posta adresinizi girin.</p>
@@ -93,7 +100,7 @@
                             <path d="M16 10h2"></path>
                             <path d="M16 14h2"></path>
                         </svg>
-                        <input type="text" id="sicil-no" placeholder="Lütfen Sicil Numaranızı Giriniz" required>
+                        <input type="text" id="sicil-no" autocomplete="off" placeholder="Lütfen Sicil Numaranızı Giriniz" required>
                     </div>
                 </div>
 
@@ -101,13 +108,12 @@
                     <label for="email">E-posta Adresi</label>
                     <div class="input-wrapper">
                         <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                        <input type="email" id="email" placeholder="Lütfen E-posta Adresinizi Giriniz" required>
+                        <input type="email" id="email" autocomplete="off" placeholder="Lütfen E-posta Adresinizi Giriniz" required>
                     </div>
                 </div>
                 
                 <button class="login-btn" onclick="sifirlamaGonder()">Sıfırlama Bağlantısı Gönder</button>
 
-                <!-- Giriş Ekranına Geri Dön Linki Düzeltildi -->
                 <div class="forgot-password">
                     <a href="/" class="forgot-password-link">← Giriş ekranına dön</a>
                 </div>
@@ -122,14 +128,19 @@
 
     <script>
         function initTheme() {
-            if (!localStorage.getItem('user-theme')) {
-                var t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            var t = localStorage.getItem('user-theme');
+            if (!t) {
+                t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
                 localStorage.setItem('user-theme', t);
             }
+            document.documentElement.setAttribute('data-theme', t);
         }
+        
         function applyTheme(theme) {
             document.getElementById('theme-style').setAttribute('href', '/static/css/forgot_' + theme + '.css');
+            document.documentElement.setAttribute('data-theme', theme);
         }
+        
         function toggleTheme() {
             var newTheme = localStorage.getItem('user-theme') === 'dark' ? 'light' : 'dark';
             localStorage.setItem('user-theme', newTheme);
@@ -137,7 +148,6 @@
         }
         initTheme();
 
-        // -- BİLDİRİM FONKSİYONU --
         let toastTimeout;
         function showNotification(message, type = 'error') {
             const toast = document.getElementById('customToast');
@@ -161,7 +171,6 @@
             }, 4000);
         }
 
-        // -- SIFIRLAMA İŞLEMİ --
         function sifirlamaGonder() {
             const sicil = document.getElementById('sicil-no').value.trim();
             const email = document.getElementById('email').value.trim();
@@ -171,10 +180,8 @@
                 return;
             }
 
-            // Burada ileride arka plan API çağrısı yapılacak. Şimdilik başarılı gibi davranıyoruz:
             showNotification("Sıfırlama bağlantısı e-posta adresinize gönderildi.", "success");
             
-            // İsteğe bağlı: Başarılı işlem sonrası inputları temizleme
             document.getElementById('sicil-no').value = "";
             document.getElementById('email').value = "";
         }

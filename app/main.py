@@ -1,6 +1,6 @@
 # app/main.py
-from fastapi import FastAPI, Request, Form
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Request, Form, HTTPException
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import os
@@ -10,10 +10,12 @@ app = FastAPI(title="İş Zekası Platformu")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory=".")
 
-# Şimdilik kurulum durumunu hafızada tutan geçici bir anahtar (İleride veritabanına bağlanacak)
+# Şimdilik veritabanı olmadığı için geçici kurulum bilgileri
 KURULUM_TAMAMLANDI = False
+ADMIN_SICIL = None
+ADMIN_SIFRE = None
 
-# 1. DIŞ DÜNYAYA AÇIK TEK ROTA
+# 1. DIŞ DÜNYAYA AÇIK ANA SAYFA (GİRİŞ EKRANI VEYA KURULUM)
 @app.get("/", response_class=HTMLResponse)
 async def ana_sayfa(request: Request):
     global KURULUM_TAMAMLANDI
@@ -25,28 +27,67 @@ async def ana_sayfa(request: Request):
     # Kullanıcı varsa normal giriş sayfasını aç
     return templates.TemplateResponse(request=request, name="index.html")
 
-# 2. GİZLİ BİLEŞEN ROTALARI
+# 2. GİZLİ BİLEŞEN VE SAYFA ROTALARI
 @app.get("/bilesen/{sayfa_adi}", response_class=HTMLResponse)
 async def bilesen_getir(request: Request, sayfa_adi: str):
+    # Ana sayfayı bileşen olarak çağırmayı engelle (Sonsuz döngü koruması)
     if sayfa_adi == "index":
-        return HTMLResponse(content="Lütfen ana sayfaya dönmek için sayfayı yenileyin veya '/' adresine gidin.", status_code=400)
+        return RedirectResponse(url="/")
     
     dosya_yolu = f"sayfalar/{sayfa_adi}.html"
     
     if os.path.exists(dosya_yolu):
         return templates.TemplateResponse(request=request, name=dosya_yolu)
     
-    return HTMLResponse(content="Bileşen bulunamadı.", status_code=404)
+    return HTMLResponse(content="Sayfa bulunamadı.", status_code=404)
 
-# 3. KURULUM İŞLEMLERİNİ ALACAK ROTA
+# 3. KURULUM İŞLEMLERİ
 @app.post("/kurulum-tamamla")
 async def kurulum_yap(
     kullanici_adi: str = Form(...),
     sifre: str = Form(...)
 ):
-    global KURULUM_TAMAMLANDI
-    # İleride veritabanı kayıt işlemi burada olacak
+    global KURULUM_TAMAMLANDI, ADMIN_SICIL, ADMIN_SIFRE
     
-    # Kurulum yapıldı olarak sistemi güncelliyoruz
+    # Geçici olarak sicil numarası ve şifreyi hafızaya kaydediyoruz (İleride DB'ye eklenecek)
+    ADMIN_SICIL = kullanici_adi
+    ADMIN_SIFRE = sifre
     KURULUM_TAMAMLANDI = True 
-    return {"mesaj": "Kurulum başarılı, ana sayfaya gidip giriş yapabilirsiniz!"}
+    
+    return {"mesaj": "Kurulum başarılı, ana sayfaya yönlendiriliyorsunuz..."}
+
+# 4. GİRİŞ İŞLEMLERİ
+@app.post("/giris-yap")
+async def giris_islemi(
+    kullanici_adi: str = Form(...),
+    sifre: str = Form(...)
+):
+    global ADMIN_SICIL, ADMIN_SIFRE
+    
+    # Girilen bilgiler kurulumda belirlenen bilgilerle eşleşiyor mu kontrol et
+    if kullanici_adi == ADMIN_SICIL and sifre == ADMIN_SIFRE:
+        return {"mesaj": "Giriş başarılı, sisteme aktarılıyorsunuz."}
+    else:
+        raise HTTPException(status_code=401, detail="Hatalı giriş")
+
+# 5. İŞ ZEKASI PLATFORMU (DASHBOARD) - BAŞARILI GİRİŞTEN SONRAKİ SAYFA
+@app.get("/platform", response_class=HTMLResponse)
+async def platform_dashboard():
+    # Şimdilik buraya basit bir karşılama metni koyuyoruz, ileride burası ana uygulama ekranın olacak (Metabase, n8n entegrasyonu vb.)
+    html_icerik = """
+    <html>
+        <head>
+            <title>Platform - İş Zekası</title>
+            <style>
+                body { background-color: #0f172a; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+                h1 { color: #3b82f6; }
+            </style>
+        </head>
+        <body>
+            <h1>İş Zekası Platformuna Hoş Geldiniz</h1>
+            <p>Admin girişi başarıyla sağlandı. Raporlar ve entegrasyonlar yakında burada olacak.</p>
+            <a href="/" style="color: white; margin-top: 20px;">Çıkış Yap</a>
+        </body>
+    </html>
+    """
+    return HTMLResponse(content=html_icerik)
