@@ -8,7 +8,6 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'><path d='M3 3h2v18H3V3zm6 8h2v10H9V11zm6-5h2v15h-2V6zm6 4h2v11h-2v-11z'/></svg>">
     
     <link id="theme-style" rel="stylesheet" href="/static/css/setup_light.css">
-    <!-- FOUC Önleme: body render edilmeden doğru tema yüklenir -->
     <script>
         (function () {
             var t = localStorage.getItem('user-theme') ||
@@ -18,12 +17,74 @@
             }
         })();
     </script>
+
+    <style>
+        /* --- EKRANA TAM SIĞDIRMA DÜZENLEMELERİ --- */
+        .form-panel {
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important; 
+        }
+
+        .form-wrapper {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .panel-footer {
+            position: static !important;
+            margin-top: 10px !important;
+            padding-bottom: 5px !important;
+            text-align: center;
+        }
+
+        .input-group { margin-bottom: 10px !important; }
+        .row-group { margin-bottom: 10px !important; gap: 10px; display: flex; }
+        .half-width { flex: 1; }
+        h2 { margin-bottom: 5px !important; margin-top: 0 !important; }
+        .subtitle { margin-bottom: 15px !important; }
+
+        /* --- PAROLA KURALLARI VE İKONLAR --- */
+        .password-rules {
+            font-size: 0.70rem;
+            margin-top: 5px;
+            margin-bottom: 0;
+            color: #64748b;
+            list-style-type: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px;
+        }
+        .password-rules li { display: flex; align-items: center; gap: 4px; margin: 0; }
+        .rule-pass { color: #10b981; }
+        .rule-fail { color: #ef4444; }
+        
+        .toggle-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: currentColor;
+            opacity: 0.7;
+            padding: 0;
+            display: flex;
+        }
+        .toggle-btn:hover { opacity: 1; }
+        
+        /* Sol ikonlar kalktığı için text iç boşluklarını (padding) sıfırlıyoruz */
+        .no-icon-input { padding-left: 10px !important; }
+    </style>
 </head>
 <body>
 
     <div class="split-layout">
         
-        <!-- Sol Taraf: Marka Alanı -->
         <div class="brand-panel">
             <div class="brand-content">
                 <svg class="brand-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -34,7 +95,6 @@
             </div>
         </div>
 
-        <!-- Sağ Taraf: Form ve Kontroller -->
         <div class="form-panel">
             
             <div class="top-controls">
@@ -43,59 +103,73 @@
                 </button>
             </div>
 
-            <!-- Merkezdeki Kurulum Formu -->
             <div class="form-wrapper">
                 <h2>Hoş Geldiniz</h2>
                 <p class="subtitle">Sistem yöneticisi (Admin) profilinizi tanımlayın.</p>
 
-                <!-- Ad ve Soyad Yanyana -->
                 <div class="row-group">
                     <div class="input-group half-width">
                         <label for="ad">Ad</label>
                         <div class="input-wrapper">
-                            <input type="text" id="ad" placeholder="Örn: Ahmet" required>
+                            <input type="text" id="ad" class="no-icon-input" placeholder="Örn: Ahmet" required>
                         </div>
                     </div>
                     
                     <div class="input-group half-width">
                         <label for="soyad">Soyad</label>
                         <div class="input-wrapper">
-                            <input type="text" id="soyad" placeholder="Örn: Yılmaz" required>
+                            <input type="text" id="soyad" class="no-icon-input" placeholder="Örn: Yılmaz" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row-group">
+                    <div class="input-group half-width">
+                        <label for="sicil-no">Sicil Numarası</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="sicil-no" class="no-icon-input" placeholder="Örn: 1001" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group half-width">
+                        <label for="email">E-posta</label>
+                        <div class="input-wrapper">
+                            <input type="email" id="email" class="no-icon-input" placeholder="admin@sirket.com" required>
                         </div>
                     </div>
                 </div>
 
                 <div class="input-group">
-                    <label for="sicil-no">Sicil Numarası</label>
-                    <div class="input-wrapper">
-                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="2" y="5" width="20" height="14" rx="2"></rect>
-                            <circle cx="9" cy="11" r="2"></circle>
-                            <path d="M6.17 15a3 3 0 0 1 5.66 0"></path>
-                            <path d="M16 10h2"></path>
-                            <path d="M16 14h2"></path>
-                        </svg>
-                        <input type="text" id="sicil-no" placeholder="Örn: 1001" required>
-                    </div>
-                </div>
-
-                <div class="input-group">
-                    <label for="email">E-posta Adresi</label>
-                    <div class="input-wrapper">
-                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                        <input type="email" id="email" placeholder="admin@sirket.com" required>
-                    </div>
-                </div>
-
-                <div class="input-group">
                     <label for="password">Yönetici Parolası</label>
-                    <div class="input-wrapper">
-                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                        <input type="password" id="password" placeholder="Güçlü bir parola belirleyin" required>
+                    <div class="input-wrapper" style="position: relative;">
+                        <!-- Kilit ikonu kaldırıldı, soldaki padding no-icon-input ile düzeltildi -->
+                        <input type="password" id="password" class="no-icon-input" placeholder="Güçlü bir parola belirleyin" style="padding-right: 40px;" oninput="parolaKontrolEt()" required>
+                        <button type="button" class="toggle-btn" onclick="sifreGosterGizle('password', 'eye1')">
+                            <svg id="eye1" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </button>
                     </div>
+                    <ul class="password-rules" id="rulesList">
+                        <li id="rule-len" class="rule-fail">✖ En az 12 karakter</li>
+                        <li id="rule-upper" class="rule-fail">✖ En az 1 büyük harf</li>
+                        <li id="rule-lower" class="rule-fail">✖ En az 1 küçük harf</li>
+                        <li id="rule-num" class="rule-fail">✖ En az 1 rakam</li>
+                        <li id="rule-spec" class="rule-fail">✖ En az 1 özel karakter</li>
+                    </ul>
+                </div>
+
+                <div class="input-group">
+                    <label for="password-confirm">Parolayı Onayla</label>
+                    <div class="input-wrapper" style="position: relative;">
+                        <!-- Kilit ikonu kaldırıldı -->
+                        <input type="password" id="password-confirm" class="no-icon-input" placeholder="Parolayı tekrar girin" style="padding-right: 40px;" oninput="parolaEslesmeKontrolEt()" required>
+                        <button type="button" class="toggle-btn" onclick="sifreGosterGizle('password-confirm', 'eye2')">
+                            <svg id="eye2" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </button>
+                    </div>
+                    <p id="match-msg" style="font-size: 0.70rem; margin-top: 5px; margin-bottom: 0; display: none;"></p>
                 </div>
                 
-                <button class="login-btn" onclick="alert('Kurulum tamamlanıyor...')">Sistemi Başlat</button>
+                <button class="login-btn" style="margin-top: 5px;" onclick="kurulumuTamamla()">Sistemi Başlat</button>
             </div>
 
             <div class="panel-footer">
@@ -106,25 +180,99 @@
     </div>
 
     <script>
-        // Tema localStorage'dan okunur — DOM'a asla bağımlı değiliz
         function initTheme() {
             if (!localStorage.getItem('user-theme')) {
                 var t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
                 localStorage.setItem('user-theme', t);
             }
         }
-
         function applyTheme(theme) {
             document.getElementById('theme-style').setAttribute('href', '/static/css/setup_' + theme + '.css');
         }
-
         function toggleTheme() {
             var newTheme = localStorage.getItem('user-theme') === 'dark' ? 'light' : 'dark';
             localStorage.setItem('user-theme', newTheme);
             applyTheme(newTheme);
         }
-
         initTheme();
+
+        function sifreGosterGizle(inputId, iconId) {
+            var input = document.getElementById(inputId);
+            var icon = document.getElementById(iconId);
+            
+            if (input.type === "password") {
+                input.type = "text";
+                icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+            } else {
+                input.type = "password";
+                icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+            }
+        }
+
+        let isPasswordValid = false;
+        function parolaKontrolEt() {
+            const p = document.getElementById('password').value;
+            
+            const checks = {
+                'rule-len': p.length >= 12,
+                'rule-upper': /[A-Z]/.test(p),
+                'rule-lower': /[a-z]/.test(p),
+                'rule-num': /\d/.test(p),
+                'rule-spec': /[!@#$%^&*(),.?":{}|<>]/.test(p)
+            };
+
+            isPasswordValid = true;
+
+            for (const [id, passed] of Object.entries(checks)) {
+                const el = document.getElementById(id);
+                if (passed) {
+                    el.className = 'rule-pass';
+                    el.innerText = el.innerText.replace('✖', '✔');
+                } else {
+                    el.className = 'rule-fail';
+                    el.innerText = el.innerText.replace('✔', '✖');
+                    isPasswordValid = false;
+                }
+            }
+            parolaEslesmeKontrolEt(); 
+        }
+
+        function parolaEslesmeKontrolEt() {
+            const p1 = document.getElementById('password').value;
+            const p2 = document.getElementById('password-confirm').value;
+            const msg = document.getElementById('match-msg');
+
+            if (p2.length === 0) {
+                msg.style.display = 'none';
+                return;
+            }
+
+            msg.style.display = 'block';
+            if (p1 === p2) {
+                msg.innerText = "✔ Parolalar eşleşiyor.";
+                msg.style.color = "#10b981";
+            } else {
+                msg.innerText = "✖ Parolalar eşleşmiyor.";
+                msg.style.color = "#ef4444";
+            }
+        }
+
+        function kurulumuTamamla() {
+            const p1 = document.getElementById('password').value;
+            const p2 = document.getElementById('password-confirm').value;
+
+            if (!isPasswordValid) {
+                alert("Lütfen parola kurallarının tamamını karşılayan güvenli bir parola belirleyin.");
+                return;
+            }
+
+            if (p1 !== p2) {
+                alert("Girdiğiniz parolalar eşleşmiyor. Lütfen kontrol edin.");
+                return;
+            }
+
+            alert("Harika! Şifreler geçerli. Kurulum arka plana iletiliyor...");
+        }
     </script>
 
 </body>
