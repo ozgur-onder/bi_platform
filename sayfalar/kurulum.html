@@ -19,7 +19,6 @@
     </script>
 
     <style>
-        /* --- EKRANA TAM SIĞDIRMA DÜZENLEMELERİ --- */
         .form-panel {
             display: flex !important;
             flex-direction: column !important;
@@ -46,7 +45,6 @@
         h2 { margin-bottom: 5px !important; margin-top: 0 !important; }
         .subtitle { margin-bottom: 15px !important; }
 
-        /* --- PAROLA KURALLARI VE İKONLAR --- */
         .password-rules {
             font-size: 0.70rem;
             margin-top: 5px;
@@ -77,11 +75,49 @@
         }
         .toggle-btn:hover { opacity: 1; }
         
-        /* Sol ikonlar kalktığı için text iç boşluklarını (padding) sıfırlıyoruz */
         .no-icon-input { padding-left: 10px !important; }
+
+        .login-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        /* --- ÖZEL BİLDİRİM (TOAST) TASARIMI --- */
+        #customToast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            z-index: 9999;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        #customToast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast-error { background-color: #ef4444; border: 1px solid #dc2626; }
+        .toast-success { background-color: #10b981; border: 1px solid #059669; }
+        
+        .toast-icon { width: 20px; height: 20px; }
     </style>
 </head>
 <body>
+
+    <!-- Özel Bildirim Alanı -->
+    <div id="customToast">
+        <svg id="toastIcon" class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+        <span id="toastMessage">Bildirim mesajı buraya gelecek</span>
+    </div>
 
     <div class="split-layout">
         
@@ -142,7 +178,6 @@
                 <div class="input-group">
                     <label for="password">Yönetici Parolası</label>
                     <div class="input-wrapper" style="position: relative;">
-                        <!-- Kilit ikonu kaldırıldı, soldaki padding no-icon-input ile düzeltildi -->
                         <input type="password" id="password" class="no-icon-input" placeholder="Güçlü bir parola belirleyin" style="padding-right: 40px;" oninput="parolaKontrolEt()" required>
                         <button type="button" class="toggle-btn" onclick="sifreGosterGizle('password', 'eye1')">
                             <svg id="eye1" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
@@ -160,7 +195,6 @@
                 <div class="input-group">
                     <label for="password-confirm">Parolayı Onayla</label>
                     <div class="input-wrapper" style="position: relative;">
-                        <!-- Kilit ikonu kaldırıldı -->
                         <input type="password" id="password-confirm" class="no-icon-input" placeholder="Parolayı tekrar girin" style="padding-right: 40px;" oninput="parolaEslesmeKontrolEt()" required>
                         <button type="button" class="toggle-btn" onclick="sifreGosterGizle('password-confirm', 'eye2')">
                             <svg id="eye2" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
@@ -169,7 +203,7 @@
                     <p id="match-msg" style="font-size: 0.70rem; margin-top: 5px; margin-bottom: 0; display: none;"></p>
                 </div>
                 
-                <button class="login-btn" style="margin-top: 5px;" onclick="kurulumuTamamla()">Sistemi Başlat</button>
+                <button class="login-btn" id="submitBtn" style="margin-top: 5px;" onclick="kurulumuTamamla()">Sistemi Başlat</button>
             </div>
 
             <div class="panel-footer">
@@ -196,6 +230,32 @@
         }
         initTheme();
 
+        // -- BİLDİRİM FONKSİYONU --
+        let toastTimeout;
+        function showNotification(message, type = 'error') {
+            const toast = document.getElementById('customToast');
+            const toastMsg = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            // İkonu ayarla
+            if (type === 'error') {
+                toast.className = 'toast-error';
+                toastIcon.innerHTML = '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>';
+            } else {
+                toast.className = 'toast-success';
+                toastIcon.innerHTML = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>';
+            }
+
+            toastMsg.innerText = message;
+            toast.classList.add('show');
+
+            // Önceki zamanlayıcıyı temizle ve 4 saniye sonra kapat
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+
         function sifreGosterGizle(inputId, iconId) {
             var input = document.getElementById(inputId);
             var icon = document.getElementById(iconId);
@@ -210,6 +270,7 @@
         }
 
         let isPasswordValid = false;
+        
         function parolaKontrolEt() {
             const p = document.getElementById('password').value;
             
@@ -221,7 +282,7 @@
                 'rule-spec': /[!@#$%^&*(),.?":{}|<>]/.test(p)
             };
 
-            isPasswordValid = true;
+            let allValid = true;
 
             for (const [id, passed] of Object.entries(checks)) {
                 const el = document.getElementById(id);
@@ -231,9 +292,10 @@
                 } else {
                     el.className = 'rule-fail';
                     el.innerText = el.innerText.replace('✔', '✖');
-                    isPasswordValid = false;
+                    allValid = false;
                 }
             }
+            isPasswordValid = allValid;
             parolaEslesmeKontrolEt(); 
         }
 
@@ -257,21 +319,66 @@
             }
         }
 
-        function kurulumuTamamla() {
+        async function kurulumuTamamla() {
+            const ad = document.getElementById('ad').value.trim();
+            const soyad = document.getElementById('soyad').value.trim();
+            const sicil_no = document.getElementById('sicil-no').value.trim();
+            const email = document.getElementById('email').value.trim();
             const p1 = document.getElementById('password').value;
             const p2 = document.getElementById('password-confirm').value;
 
+            // 1. ZORUNLU ALAN KONTROLÜ
+            if (!ad || !soyad || !sicil_no || !email || !p1 || !p2) {
+                showNotification("Lütfen tüm alanları eksiksiz doldurun.", "error");
+                return;
+            }
+
+            // 2. PAROLA GÜVENLİK KONTROLÜ
             if (!isPasswordValid) {
-                alert("Lütfen parola kurallarının tamamını karşılayan güvenli bir parola belirleyin.");
+                showNotification("Lütfen tüm güvenlik kurallarını karşılayan bir parola belirleyin.", "error");
                 return;
             }
 
+            // 3. PAROLA EŞLEŞME KONTROLÜ
             if (p1 !== p2) {
-                alert("Girdiğiniz parolalar eşleşmiyor. Lütfen kontrol edin.");
+                showNotification("Girdiğiniz parolalar eşleşmiyor.", "error");
                 return;
             }
 
-            alert("Harika! Şifreler geçerli. Kurulum arka plana iletiliyor...");
+            // --- TÜM KONTROLLER BAŞARILI ---
+            const btn = document.getElementById('submitBtn');
+            const originalText = btn.innerText;
+            btn.innerText = "Kuruluyor...";
+            btn.disabled = true;
+
+            const formData = new FormData();
+            formData.append("kullanici_adi", sicil_no); 
+            formData.append("sifre", p1);
+
+            try {
+                const response = await fetch('/kurulum-tamamla', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showNotification(data.mesaj, "success"); 
+                    // Başarı bildirimini okuması için 1.5 saniye bekle, sonra yönlendir
+                    setTimeout(() => {
+                        window.location.href = "/";
+                    }, 1500);
+                } else {
+                    showNotification("Kurulum sırasında sunucu hatası oluştu.", "error");
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error("Hata:", error);
+                showNotification("Sunucuya ulaşılamıyor. Lütfen bağlantınızı kontrol edin.", "error");
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
         }
     </script>
 

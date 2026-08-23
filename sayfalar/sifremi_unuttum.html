@@ -8,7 +8,6 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'><path d='M3 3h2v18H3V3zm6 8h2v10H9V11zm6-5h2v15h-2V6zm6 4h2v11h-2v-11z'/></svg>">
     
     <link id="theme-style" rel="stylesheet" href="/static/css/forgot_light.css">
-    <!-- FOUC Önleme: body render edilmeden doğru tema yüklenir -->
     <script>
         (function () {
             var t = localStorage.getItem('user-theme') ||
@@ -18,8 +17,44 @@
             }
         })();
     </script>
+
+    <style>
+        /* --- ÖZEL BİLDİRİM (TOAST) TASARIMI --- */
+        #customToast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            z-index: 9999;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        #customToast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast-error { background-color: #ef4444; border: 1px solid #dc2626; }
+        .toast-success { background-color: #10b981; border: 1px solid #059669; }
+        
+        .toast-icon { width: 20px; height: 20px; }
+    </style>
 </head>
 <body>
+
+    <!-- Özel Bildirim Alanı -->
+    <div id="customToast">
+        <svg id="toastIcon" class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+        <span id="toastMessage">Bildirim mesajı buraya gelecek</span>
+    </div>
 
     <div class="split-layout">
         
@@ -70,11 +105,11 @@
                     </div>
                 </div>
                 
-                <button class="login-btn" onclick="alert('Sıfırlama bağlantısı gönderildi.')">Sıfırlama Bağlantısı Gönder</button>
+                <button class="login-btn" onclick="sifirlamaGonder()">Sıfırlama Bağlantısı Gönder</button>
 
-                <!-- Giriş Ekranına Geri Dön Linki -->
+                <!-- Giriş Ekranına Geri Dön Linki Düzeltildi -->
                 <div class="forgot-password">
-                    <a href="#" onclick="sayfaYukle(event, 'index')" class="forgot-password-link">← Giriş ekranına dön</a>
+                    <a href="/" class="forgot-password-link">← Giriş ekranına dön</a>
                 </div>
             </div>
 
@@ -86,42 +121,62 @@
     </div>
 
     <script>
-        // Tema localStorage'dan okunur — DOM'a asla bağımlı değiliz
         function initTheme() {
             if (!localStorage.getItem('user-theme')) {
                 var t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
                 localStorage.setItem('user-theme', t);
             }
         }
-
         function applyTheme(theme) {
             document.getElementById('theme-style').setAttribute('href', '/static/css/forgot_' + theme + '.css');
         }
-
         function toggleTheme() {
             var newTheme = localStorage.getItem('user-theme') === 'dark' ? 'light' : 'dark';
             localStorage.setItem('user-theme', newTheme);
             applyTheme(newTheme);
         }
-
         initTheme();
 
-        // SPA Sayfa Yükleme Motoru (Giriş ekranına dönebilmek için)
-        async function sayfaYukle(event, sayfaAdi) {
-            event.preventDefault();
-            try {
-                const response = await fetch('/bilesen/' + sayfaAdi);
-                if (!response.ok) {
-                    throw new Error("Bileşen bulunamadı.");
-                }
-                const html = await response.text();
-                document.open();
-                document.write(html);
-                document.close();
-            } catch (error) {
-                console.error("Sayfa yüklenirken hata oluştu:", error);
-                alert("Sayfa yüklenemedi. Lütfen tekrar deneyin.");
+        // -- BİLDİRİM FONKSİYONU --
+        let toastTimeout;
+        function showNotification(message, type = 'error') {
+            const toast = document.getElementById('customToast');
+            const toastMsg = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            if (type === 'error') {
+                toast.className = 'toast-error';
+                toastIcon.innerHTML = '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>';
+            } else {
+                toast.className = 'toast-success';
+                toastIcon.innerHTML = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>';
             }
+
+            toastMsg.innerText = message;
+            toast.classList.add('show');
+
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+
+        // -- SIFIRLAMA İŞLEMİ --
+        function sifirlamaGonder() {
+            const sicil = document.getElementById('sicil-no').value.trim();
+            const email = document.getElementById('email').value.trim();
+
+            if (!sicil || !email) {
+                showNotification("Lütfen sicil numaranızı ve e-posta adresinizi eksiksiz girin.", "error");
+                return;
+            }
+
+            // Burada ileride arka plan API çağrısı yapılacak. Şimdilik başarılı gibi davranıyoruz:
+            showNotification("Sıfırlama bağlantısı e-posta adresinize gönderildi.", "success");
+            
+            // İsteğe bağlı: Başarılı işlem sonrası inputları temizleme
+            document.getElementById('sicil-no').value = "";
+            document.getElementById('email').value = "";
         }
     </script>
 
