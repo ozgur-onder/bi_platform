@@ -14,17 +14,14 @@ app = FastAPI(title="İş Zekası Platformu")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory=".")
 
-# --- ŞİFRELEME (HASH) YAPILANDIRMASI (DOĞRUDAN BCRYPT) ---
+# --- ŞİFRELEME (HASH) YAPILANDIRMASI ---
 def get_password_hash(password: str) -> str:
-    # Şifreyi byte formatına çevirip tuzlayarak (salt) şifreliyoruz
     pwd_bytes = password.encode('utf-8')
     salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(pwd_bytes, salt)
-    # Veritabanına String olarak kaydetmek için tekrar decode ediyoruz
     return hashed_password.decode('utf-8')
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    # Girilen şifreyi ve DB'deki hashli şifreyi byte formatında karşılaştırıyoruz
     plain_password_bytes = plain_password.encode('utf-8')
     hashed_password_bytes = hashed_password.encode('utf-8')
     return bcrypt.checkpw(plain_password_bytes, hashed_password_bytes)
@@ -63,7 +60,6 @@ async def kurulum_yap(
     if sayi > 0:
         raise HTTPException(status_code=400, detail="Sistem zaten kurulu.")
         
-    # Parolayı hashleyerek veritabanına yazıyoruz (Güvenli Yöntem)
     hashed_sifre = get_password_hash(sifre)
         
     db.execute(
@@ -86,12 +82,23 @@ async def giris_islemi(
     sifre: str = Form(...),
     db: Session = Depends(get_db)
 ):
-    # İstemciden IP ve Tarayıcı bilgisini alıyoruz (Canlı ortama tam uyumlu)
+    # İstemciden IP ve Tarayıcı bilgisini alıyoruz
     ip_adresi = request.headers.get("X-Forwarded-For", request.client.host)
     if ip_adresi:
-        ip_adresi = ip_adresi.split(",")[0].strip() # Birden fazla proxy varsa ilk ve gerçek IP'yi alır
+        ip_adresi = ip_adresi.split(",")[0].strip()
         
     tarayici = request.headers.get("user-agent")[:255] if request.headers.get("user-agent") else "Bilinmiyor"
+    
+    # --- BRUTE FORCE (KABA KUVVET) KORUMASI ---
+    # Bu IP adresinden son 15 dakikada kaç tane başarısız giriş yapılmış kontrol ediyoruz
+    basarisiz_denemeler = db.execute(
+        text("SELECT COUNT(*) FROM kullanici_giris_loglari WHERE ip_adresi = :ip AND durum = 'Başarısız' AND islem_zamani >= NOW() - INTERVAL '15 minutes'"),
+        {"ip": ip_adresi}
+    ).scalar()
+
+    if basarisiz_denemeler >= 5:
+        # 429 Too Many Requests (Çok Fazla İstek) koduyla saldırganı engelliyoruz
+        raise HTTPException(status_code=429, detail="Çok fazla hatalı deneme yaptınız. Lütfen 15 dakika bekleyin.")
     
     # Kullanıcıyı sicil numarasına göre bul
     kullanici = db.execute(
@@ -100,11 +107,12 @@ async def giris_islemi(
     ).fetchone()
     
     if not kullanici:
+        # Sicil yoksa DB kısıtlamalarına (Foreign Key) takılmamak için doğrudan reddediyoruz
         raise HTTPException(status_code=401, detail="Hatalı sicil numarası veya şifre.")
 
-    # Şifre Doğrulaması (Kullanıcının girdiği açık şifre ile DB'deki hash'i kıyaslar)
+    # Şifre Doğrulaması
     if not verify_password(sifre, kullanici.parola):
-        # Başarısız giriş logu basıyoruz
+        # Şifre yanlışsa başarısız logu basıyoruz
         db.execute(
             text("INSERT INTO kullanici_giris_loglari (sicil, durum, ip_adresi, tarayici, hata_mesaji) VALUES (:sicil, 'Başarısız', :ip, :tarayici, 'Hatalı şifre')"),
             {"sicil": kullanici_adi, "ip": ip_adresi, "tarayici": tarayici}
@@ -113,24 +121,19 @@ async def giris_islemi(
         raise HTTPException(status_code=401, detail="Hatalı sicil numarası veya şifre.")
         
     # --- BAŞARILI GİRİŞ İŞLEMLERİ ---
-    
-    # Oturum token'ı oluşturuyoruz
     oturum_token = secrets.token_hex(32)
     
-    # Başarılı giriş logunu basıyoruz
     db.execute(
         text("INSERT INTO kullanici_giris_loglari (sicil, durum, ip_adresi, tarayici) VALUES (:sicil, 'Başarılı', :ip, :tarayici)"),
         {"sicil": kullanici_adi, "ip": ip_adresi, "tarayici": tarayici}
     )
     
-    # Oturumu aktif olarak kaydediyoruz
     db.execute(
         text("INSERT INTO kullanici_oturumlari (sicil, oturum_token, ip_adresi, tarayici, durum) VALUES (:sicil, :token, :ip, :tarayici, 'aktif')"),
         {"sicil": kullanici_adi, "token": oturum_token, "ip": ip_adresi, "tarayici": tarayici}
     )
     
     db.commit()
-    
     return {"mesaj": "Giriş başarılı."}
 
 @app.get("/platform", response_class=HTMLResponse)
