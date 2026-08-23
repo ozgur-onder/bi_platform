@@ -3,6 +3,8 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import os
+import secrets
+import bcrypt
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.core.database import get_db
@@ -12,16 +14,28 @@ app = FastAPI(title="İş Zekası Platformu")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory=".")
 
+# --- ŞİFRELEME (HASH) YAPILANDIRMASI (DOĞRUDAN BCRYPT) ---
+def get_password_hash(password: str) -> str:
+    # Şifreyi byte formatına çevirip tuzlayarak (salt) şifreliyoruz
+    pwd_bytes = password.encode('utf-8')
+    salt = bcrypt.gensalt()
+    hashed_password = bcrypt.hashpw(pwd_bytes, salt)
+    # Veritabanına String olarak kaydetmek için tekrar decode ediyoruz
+    return hashed_password.decode('utf-8')
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    # Girilen şifreyi ve DB'deki hashli şifreyi byte formatında karşılaştırıyoruz
+    plain_password_bytes = plain_password.encode('utf-8')
+    hashed_password_bytes = hashed_password.encode('utf-8')
+    return bcrypt.checkpw(plain_password_bytes, hashed_password_bytes)
+
 @app.get("/", response_class=HTMLResponse)
 async def ana_sayfa(request: Request, db: Session = Depends(get_db)):
-    # Veritabanında hiç kayıtlı kullanıcı var mı diye bakıyoruz
     kullanici_sayisi = db.execute(text("SELECT COUNT(*) FROM kullanicilar")).scalar()
     
-    # Kullanıcı yoksa kurulum ekranına yönlendir
     if kullanici_sayisi == 0:
         return templates.TemplateResponse(request=request, name="sayfalar/kurulum.html")
     
-    # Kullanıcı varsa standart giriş ekranını aç
     return templates.TemplateResponse(request=request, name="index.html")
 
 @app.get("/bilesen/{sayfa_adi}", response_class=HTMLResponse)
@@ -37,6 +51,7 @@ async def bilesen_getir(request: Request, sayfa_adi: str):
 
 @app.post("/kurulum-tamamla")
 async def kurulum_yap(
+    request: Request,
     ad: str = Form(...),
     soyad: str = Form(...),
     sicil_no: str = Form(...),
@@ -44,18 +59,18 @@ async def kurulum_yap(
     sifre: str = Form(...),
     db: Session = Depends(get_db)
 ):
-    # Başkası bizden önce kurmuş mu kontrolü
     sayi = db.execute(text("SELECT COUNT(*) FROM kullanicilar")).scalar()
     if sayi > 0:
         raise HTTPException(status_code=400, detail="Sistem zaten kurulu.")
         
-    # Kullanıcıyı veritabanına kaydet
+    # Parolayı hashleyerek veritabanına yazıyoruz (Güvenli Yöntem)
+    hashed_sifre = get_password_hash(sifre)
+        
     db.execute(
         text("INSERT INTO kullanicilar (sicil, ad, soyad, email, parola, olusturan_kullanici_sicil) VALUES (:sicil, :ad, :soyad, :email, :sifre, :sicil)"),
-        {"sicil": sicil_no, "ad": ad, "soyad": soyad, "email": email, "sifre": sifre}
+        {"sicil": sicil_no, "ad": ad, "soyad": soyad, "email": email, "sifre": hashed_sifre}
     )
     
-    # İlk kullanıcıya doğrudan Sistem Yöneticisi yetkisi ver
     db.execute(
         text("INSERT INTO kullanici_yetkileri (sicil, firma_id, rol_id, tanimlayan_kullanici_sicil) VALUES (:sicil, 1, 1, :sicil)"),
         {"sicil": sicil_no}
@@ -66,20 +81,57 @@ async def kurulum_yap(
 
 @app.post("/giris-yap")
 async def giris_islemi(
+    request: Request,
     kullanici_adi: str = Form(...),
     sifre: str = Form(...),
     db: Session = Depends(get_db)
 ):
-    # Veritabanında sicil ve şifre eşleşmesi ara
+    # İstemciden IP ve Tarayıcı bilgisini alıyoruz (Canlı ortama tam uyumlu)
+    ip_adresi = request.headers.get("X-Forwarded-For", request.client.host)
+    if ip_adresi:
+        ip_adresi = ip_adresi.split(",")[0].strip() # Birden fazla proxy varsa ilk ve gerçek IP'yi alır
+        
+    tarayici = request.headers.get("user-agent")[:255] if request.headers.get("user-agent") else "Bilinmiyor"
+    
+    # Kullanıcıyı sicil numarasına göre bul
     kullanici = db.execute(
-        text("SELECT sicil FROM kullanicilar WHERE sicil = :sicil AND parola = :sifre"),
-        {"sicil": kullanici_adi, "sifre": sifre}
+        text("SELECT sicil, parola FROM kullanicilar WHERE sicil = :sicil"),
+        {"sicil": kullanici_adi}
     ).fetchone()
     
-    if kullanici:
-        return {"mesaj": "Giriş başarılı."}
-    else:
-        raise HTTPException(status_code=401, detail="Hatalı giriş.")
+    if not kullanici:
+        raise HTTPException(status_code=401, detail="Hatalı sicil numarası veya şifre.")
+
+    # Şifre Doğrulaması (Kullanıcının girdiği açık şifre ile DB'deki hash'i kıyaslar)
+    if not verify_password(sifre, kullanici.parola):
+        # Başarısız giriş logu basıyoruz
+        db.execute(
+            text("INSERT INTO kullanici_giris_loglari (sicil, durum, ip_adresi, tarayici, hata_mesaji) VALUES (:sicil, 'Başarısız', :ip, :tarayici, 'Hatalı şifre')"),
+            {"sicil": kullanici_adi, "ip": ip_adresi, "tarayici": tarayici}
+        )
+        db.commit()
+        raise HTTPException(status_code=401, detail="Hatalı sicil numarası veya şifre.")
+        
+    # --- BAŞARILI GİRİŞ İŞLEMLERİ ---
+    
+    # Oturum token'ı oluşturuyoruz
+    oturum_token = secrets.token_hex(32)
+    
+    # Başarılı giriş logunu basıyoruz
+    db.execute(
+        text("INSERT INTO kullanici_giris_loglari (sicil, durum, ip_adresi, tarayici) VALUES (:sicil, 'Başarılı', :ip, :tarayici)"),
+        {"sicil": kullanici_adi, "ip": ip_adresi, "tarayici": tarayici}
+    )
+    
+    # Oturumu aktif olarak kaydediyoruz
+    db.execute(
+        text("INSERT INTO kullanici_oturumlari (sicil, oturum_token, ip_adresi, tarayici, durum) VALUES (:sicil, :token, :ip, :tarayici, 'aktif')"),
+        {"sicil": kullanici_adi, "token": oturum_token, "ip": ip_adresi, "tarayici": tarayici}
+    )
+    
+    db.commit()
+    
+    return {"mesaj": "Giriş başarılı."}
 
 @app.get("/platform", response_class=HTMLResponse)
 async def platform_dashboard():
