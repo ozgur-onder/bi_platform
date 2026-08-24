@@ -2,8 +2,7 @@ from fastapi import APIRouter, Request, Form, HTTPException, Depends, Background
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 import secrets
-from datetime import datetime, timedelta
-import zoneinfo 
+from datetime import datetime, timedelta, timezone
 from app.core.database import get_db
 from app.core.security import verify_password, get_password_hash
 from app.core.mailer import reset_maili_gonder
@@ -66,19 +65,25 @@ def sifre_sifirlama_talep(
 
     if kullanici:
         token = secrets.token_urlsafe(64)
-        gecerlilik = datetime.now(zoneinfo.ZoneInfo("Europe/Istanbul")) + timedelta(hours=1)
+
+        # DÜZELTME: datetime.utcnow() kullanıyoruz (naive UTC).
+        # DB sütunu TIMESTAMP (naive), dolayısıyla aware datetime karşılaştırması
+        # "TypeError: can't compare offset-naive and offset-aware datetimes" verir.
+        gecerlilik = datetime.utcnow() + timedelta(hours=1)
         
         db.execute(text("INSERT INTO sifre_sifirlama_talepleri (sicil, token, gecerlilik_suresi, ip_adresi) VALUES (:sicil, :token, :gecerlilik, :ip)"), {"sicil": sicil, "token": token, "gecerlilik": gecerlilik, "ip": ip_adresi})
         db.commit()
 
-        reset_link = f"http://127.0.0.1:8000/bilesen/sifre-sifirla?token={token}"
+        # DÜZELTME: reset_link'i dinamik olarak üret (request.base_url üzerinden).
+        # Sabit "http://127.0.0.1:8000" production'da çalışmaz.
+        base_url = str(request.base_url).rstrip("/")
+        reset_link = f"{base_url}/bilesen/sifre-sifirla?token={token}"
         
         print(f"\n=======================================================")
         print(f"ŞİFRE SIFIRLAMA LİNKİ (Kullanıcı: {sicil})")
         print(reset_link)
         print(f"=======================================================\n")
         
-        # SİLDİĞİMİZ MAİL GÖNDERME KODU GERİ GELDİ!
         background_tasks.add_task(reset_maili_gonder, email, reset_link)
         
     return {"mesaj": "Sıfırlama bağlantısı e-posta adresinize gönderildi."}
@@ -97,7 +102,9 @@ def yeni_sifre_belirle(
     if not talep:
         raise HTTPException(status_code=400, detail="Geçersiz veya kullanılmış şifre sıfırlama bağlantısı.")
 
-    if datetime.now(zoneinfo.ZoneInfo("Europe/Istanbul")) > talep.gecerlilik_suresi:
+    # DÜZELTME: datetime.utcnow() (naive) ile karşılaştır.
+    # DB'den gelen gecerlilik_suresi da naive (TIMESTAMP tipinden okunuyor).
+    if datetime.utcnow() > talep.gecerlilik_suresi:
         raise HTTPException(status_code=400, detail="Şifre sıfırlama bağlantısının süresi dolmuş.")
 
     hashed_sifre = get_password_hash(yeni_sifre)
