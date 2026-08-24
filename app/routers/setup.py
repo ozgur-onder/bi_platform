@@ -35,6 +35,7 @@ async def kurulum_yap(
         {"sicil": sicil_no, "ad": ad, "soyad": soyad, "email": email, "sifre": hashed_sifre}
     )
     
+    # Kullanıcıyı 1 numaralı firmaya bağlamak için mevcut yapı
     db.execute(
         text("""
             INSERT INTO kullanici_yetkileri (sicil, firma_id, rol_id, tanimlayan_kullanici_sicil) 
@@ -43,13 +44,12 @@ async def kurulum_yap(
         {"sicil": sicil_no}
     )
 
-    # Firma, Rol ve Rapor Koduna varsayılan '1' değeri atanıyor
-    # Gönderici adı (gonderici) HTML'deki formdan alınıp sisteme gömülüyor
+    # SMTP ayarlarını tam olarak istediğin şekilde 'F001' koduyla kaydediyoruz
     result = db.execute(
         text("""
             INSERT INTO smtp_ayarlari 
-            (firma_id, rol_id, rapor_kodu, sunucu, port, kullanici_adi, sifre, gonderici_adi, varsayilan_mi, olusturan_guncelleyen_sicil) 
-            VALUES (1, 1, '1', :sunucu, :port, :kullanici, :s_sifre, :gonderici, TRUE, :sicil)
+            (firma_kodu, rol_id, rapor_kodu, sunucu, port, kullanici_adi, sifre, gonderici_adi, varsayilan_mi, olusturan_guncelleyen_sicil) 
+            VALUES ('F001', 1, '1', :sunucu, :port, :kullanici, :s_sifre, :gonderici, TRUE, :sicil)
             RETURNING id
         """),
         {

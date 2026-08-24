@@ -52,7 +52,6 @@
             display: block;
         }
 
-        /* --- YENİ BİLGİ KUTUSU TASARIMI --- */
         .info-box {
             background-color: rgba(59, 130, 246, 0.1);
             border-left: 4px solid #3b82f6;
@@ -68,7 +67,6 @@
             background-color: #eff6ff;
         }
 
-        /* --- SİHİRBAZ (WIZARD) GEÇİŞLERİ --- */
         .step-container {
             display: none;
             animation: fadeIn 0.3s ease-out;
@@ -79,7 +77,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- BUTON GRUBU --- */
         .button-group {
             display: flex;
             gap: 12px;
@@ -101,17 +98,15 @@
         :root[data-theme="light"] .btn-secondary:hover { background: rgba(0, 0, 0, 0.03); }
         .login-btn { flex: 2; }
 
-        /* --- INPUT NUMBER OKLARINI GİZLEME --- */
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { 
             -webkit-appearance: none; 
             margin: 0; 
         }
         input[type=number] {
-            -moz-appearance: textfield; /* Firefox için */
+            -moz-appearance: textfield; 
         }
 
-        /* Diğer Tasarımlar */
         .password-rules {
             font-size: 0.70rem;
             margin-top: 5px;
@@ -144,7 +139,6 @@
         .no-icon-input { padding-left: 10px !important; }
         .login-btn:disabled { opacity: 0.7; cursor: not-allowed; }
 
-        /* --- TOAST --- */
         #customToast {
             position: fixed;
             top: 20px; left: 50%;
@@ -161,7 +155,6 @@
         .toast-success { background-color: #10b981; border: 1px solid #059669; }
         .toast-icon { width: 20px; height: 20px; }
 
-        /* --- AUTOFILL --- */
         input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus, input:-webkit-autofill:active {
             -webkit-box-shadow: 0 0 0 30px #0f172a inset !important;
             -webkit-text-fill-color: white !important; 
@@ -208,7 +201,7 @@
                     <span class="step-indicator">Adım 1/2: Sistem Yöneticisi</span>
                     
                     <div class="info-box">
-                        <strong>Sistem Yöneticisi Kullanıcısı Eklemek;</strong> Firma, rol ve diğer kullanıcı tanımlarını yapmak için gereklidir. 
+                        <strong>Sistem Yöneticisi Kullanıcısı Eklemek;</strong> Firma, rol ve diğer kullanıcı tanımlarını yapmak için gereklidir. Lütfen bilgileri daha sonra unutmayacak şekilde doldurunuz.
                     </div>
 
                     <div class="row-group">
@@ -277,7 +270,7 @@
                     <span class="step-indicator">Adım 2/2: Mail (SMTP) Ayarları</span>
                     
                     <div class="info-box">
-                        <strong>Otomatik mail gönderimi</strong> (şifre sıfırlama, rapor iletimi vb.) yapılmasını sağlayan hesap bilgilerinin girilmelidir.
+                        <strong>Otomatik mail gönderimi</strong> (şifre sıfırlama, rapor iletimi vb.) yapılmasını sağlayan hesap bilgilerinin girilmesi gereklidir. Tüm alanlar zorunludur.
                     </div>
 
                     <div class="row-group">
@@ -310,6 +303,13 @@
                                     <svg id="eye3" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                                 </button>
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="smtp-gonderici">Görünen Gönderici Adı</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="smtp-gonderici" class="no-icon-input" autocomplete="off" placeholder="Örn: İş Zekası Platformu (Kullanıcılar bu ismi görecek)" required>
                         </div>
                     </div>
 
@@ -433,7 +433,12 @@
             }
         }
 
-        // --- SİHİRBAZ GEÇİŞ FONKSİYONLARI ---
+        // --- YENİ EKLENEN E-POSTA FORMAT KONTROLÜ FONKSİYONU ---
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
         function validateStep1() {
             const ad = document.getElementById('ad').value.trim();
             const soyad = document.getElementById('soyad').value.trim();
@@ -446,6 +451,13 @@
                 showNotification("Lütfen tüm yönetici bilgilerini eksiksiz doldurun.", "error");
                 return;
             }
+
+            // Mail adresi geçerli bir formata sahip mi kontrolü
+            if (!isValidEmail(email)) {
+                showNotification("Lütfen geçerli bir e-posta adresi girin. (Örn: isim@sirket.com)", "error");
+                return;
+            }
+
             if (!isPasswordValid) {
                 showNotification("Lütfen tüm güvenlik kurallarını karşılayan bir parola belirleyin.", "error");
                 return;
@@ -464,7 +476,6 @@
             document.getElementById('step-1').classList.add('active');
         }
 
-        // --- KURULUMU TAMAMLAMA ---
         async function kurulumuTamamla() {
             const ad = document.getElementById('ad').value.trim();
             const soyad = document.getElementById('soyad').value.trim();
@@ -476,9 +487,16 @@
             const smtp_port = document.getElementById('smtp-port').value.trim();
             const smtp_email = document.getElementById('smtp-email').value.trim();
             const smtp_sifre = document.getElementById('smtp-sifre').value;
+            const smtp_gonderici = document.getElementById('smtp-gonderici').value.trim();
 
-            if (!smtp_sunucu || !smtp_port || !smtp_email || !smtp_sifre) {
+            if (!smtp_sunucu || !smtp_port || !smtp_email || !smtp_sifre || !smtp_gonderici) {
                 showNotification("Lütfen tüm mail ayarlarını eksiksiz doldurun.", "error");
+                return;
+            }
+
+            // SMTP Gönderici Mail adresi geçerli mi kontrolü
+            if (!isValidEmail(smtp_email)) {
+                showNotification("Lütfen geçerli bir gönderici e-posta adresi girin.", "error");
                 return;
             }
 
@@ -498,6 +516,7 @@
             formData.append("smtp_port", smtp_port);
             formData.append("smtp_email", smtp_email);
             formData.append("smtp_sifre", smtp_sifre);
+            formData.append("smtp_gonderici", smtp_gonderici);
 
             try {
                 const response = await fetch('/kurulum-tamamla', {
