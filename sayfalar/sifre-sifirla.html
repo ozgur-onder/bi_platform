@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yeni Şifre Belirle - İş Zekası Platformu</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'><path d='M3 3h2v18H3V3zm6 8h2v10H9V11zm6-5h2v15h-2V6zm6 4h2v11h-2v-11z'/></svg>">
+    
+    <link id="theme-style" rel="stylesheet" href="/static/css/setup_light.css">
+    <script>
+        (function () {
+            var t = localStorage.getItem('user-theme') ||
+                    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            if (t === 'dark') {
+                document.getElementById('theme-style').setAttribute('href', '/static/css/setup_dark.css');
+            }
+        })();
+    </script>
+
+    <style>
+        .form-panel {
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        .form-wrapper {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .panel-footer {
+            margin-top: auto !important;
+            padding-bottom: 20px !important;
+            text-align: center;
+        }
+
+        .input-group { margin-bottom: 15px !important; }
+        
+        .password-rules {
+            font-size: 0.70rem;
+            margin-top: 5px;
+            margin-bottom: 0;
+            color: #64748b;
+            list-style-type: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px;
+        }
+        .password-rules li { display: flex; align-items: center; gap: 4px; margin: 0; }
+        .rule-pass { color: #10b981; }
+        .rule-fail { color: #ef4444; }
+        
+        .toggle-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: currentColor;
+            opacity: 0.7;
+            padding: 0;
+            display: flex;
+        }
+        .toggle-btn:hover { opacity: 1; }
+        
+        .no-icon-input { padding-left: 10px !important; }
+
+        .login-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        /* TOAST TASARIMI */
+        #customToast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            z-index: 9999;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        #customToast.show { transform: translateX(-50%) translateY(0); }
+        .toast-error { background-color: #ef4444; border: 1px solid #dc2626; }
+        .toast-success { background-color: #10b981; border: 1px solid #059669; }
+        .toast-icon { width: 20px; height: 20px; }
+
+        input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus, input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px #0f172a inset !important;
+            -webkit-text-fill-color: white !important;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+
+        :root[data-theme="light"] input:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0 30px white inset !important;
+            -webkit-text-fill-color: #1e293b !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="customToast">
+        <svg id="toastIcon" class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+        <span id="toastMessage">Bildirim mesajı buraya gelecek</span>
+    </div>
+
+    <div class="split-layout">
+        
+        <div class="brand-panel">
+            <div class="brand-content">
+                <svg class="brand-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+                </svg>
+                <h1>İş Zekası Platformu</h1>
+                <p>Hesabınızın güvenliği için yeni bir şifre belirleyin.</p>
+            </div>
+        </div>
+
+        <div class="form-panel">
+            
+            <div class="top-controls">
+                <button class="theme-toggle" onclick="toggleTheme()" title="Temayı Değiştir">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </button>
+            </div>
+
+            <div class="form-wrapper">
+                <h2 style="margin-bottom: 5px; margin-top: 0;">Yeni Şifre Belirle</h2>
+                <p style="margin-bottom: 25px; color: #94a3b8; font-size: 0.95rem;">Lütfen aşağıda yeni şifrenizi girin.</p>
+
+                <!-- URL'den gelen token'ı tutacağımız gizli alan -->
+                <input type="hidden" id="reset-token" value="">
+
+                <div class="input-group">
+                    <label for="password">Yeni Parola</label>
+                    <div class="input-wrapper" style="position: relative;">
+                        <input type="password" id="password" class="no-icon-input" autocomplete="new-password" placeholder="Güçlü bir parola belirleyin" style="padding-right: 40px;" oninput="parolaKontrolEt()" required>
+                        <button type="button" class="toggle-btn" onclick="sifreGosterGizle('password', 'eye1')">
+                            <svg id="eye1" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </button>
+                    </div>
+                    <ul class="password-rules" id="rulesList">
+                        <li id="rule-len" class="rule-fail">✖ En az 12 karakter</li>
+                        <li id="rule-upper" class="rule-fail">✖ En az 1 büyük harf</li>
+                        <li id="rule-lower" class="rule-fail">✖ En az 1 küçük harf</li>
+                        <li id="rule-num" class="rule-fail">✖ En az 1 rakam</li>
+                        <li id="rule-spec" class="rule-fail">✖ En az 1 özel karakter</li>
+                    </ul>
+                </div>
+
+                <div class="input-group">
+                    <label for="password-confirm">Parolayı Onayla</label>
+                    <div class="input-wrapper" style="position: relative;">
+                        <input type="password" id="password-confirm" class="no-icon-input" autocomplete="new-password" placeholder="Parolayı tekrar girin" style="padding-right: 40px;" oninput="parolaEslesmeKontrolEt()" required>
+                        <button type="button" class="toggle-btn" onclick="sifreGosterGizle('password-confirm', 'eye2')">
+                            <svg id="eye2" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </button>
+                    </div>
+                    <p id="match-msg" style="font-size: 0.70rem; margin-top: 5px; margin-bottom: 0; display: none;"></p>
+                </div>
+                
+                <button class="login-btn" id="submitBtn" style="margin-top: 15px;" onclick="sifreyiGuncelle()">Şifremi Güncelle</button>
+            </div>
+
+            <div class="panel-footer">
+                &copy; 2026 İş Zekası Platformu. Tüm hakları saklıdır.
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Sayfa yüklendiğinde URL'deki token'ı alıp gizli input'a yaz
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            if (token) {
+                document.getElementById('reset-token').value = token;
+            } else {
+                showNotification("Geçersiz veya eksik şifre sıfırlama bağlantısı.", "error");
+                document.getElementById('submitBtn').disabled = true;
+            }
+        });
+
+        function initTheme() {
+            var t = localStorage.getItem('user-theme');
+            if (!t) {
+                t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                localStorage.setItem('user-theme', t);
+            }
+            document.documentElement.setAttribute('data-theme', t);
+        }
+
+        function applyTheme(theme) {
+            document.getElementById('theme-style').setAttribute('href', '/static/css/setup_' + theme + '.css');
+            document.documentElement.setAttribute('data-theme', theme);
+        }
+
+        function toggleTheme() {
+            var newTheme = localStorage.getItem('user-theme') === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('user-theme', newTheme);
+            applyTheme(newTheme);
+        }
+        initTheme();
+
+        let toastTimeout;
+        function showNotification(message, type = 'error') {
+            const toast = document.getElementById('customToast');
+            const toastMsg = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            if (type === 'error') {
+                toast.className = 'toast-error';
+                toastIcon.innerHTML = '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>';
+            } else {
+                toast.className = 'toast-success';
+                toastIcon.innerHTML = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>';
+            }
+
+            toastMsg.innerText = message;
+            toast.classList.add('show');
+
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 4000);
+        }
+
+        function sifreGosterGizle(inputId, iconId) {
+            var input = document.getElementById(inputId);
+            var icon = document.getElementById(iconId);
+            
+            if (input.type === "password") {
+                input.type = "text";
+                icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+            } else {
+                input.type = "password";
+                icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+            }
+        }
+
+        let isPasswordValid = false;
+        
+        function parolaKontrolEt() {
+            const p = document.getElementById('password').value;
+            const checks = {
+                'rule-len': p.length >= 12,
+                'rule-upper': /[A-Z]/.test(p),
+                'rule-lower': /[a-z]/.test(p),
+                'rule-num': /\d/.test(p),
+                'rule-spec': /[!@#$%^&*(),.?":{}|<>]/.test(p)
+            };
+
+            let allValid = true;
+            for (const [id, passed] of Object.entries(checks)) {
+                const el = document.getElementById(id);
+                if (passed) {
+                    el.className = 'rule-pass';
+                    el.innerText = el.innerText.replace('✖', '✔');
+                } else {
+                    el.className = 'rule-fail';
+                    el.innerText = el.innerText.replace('✔', '✖');
+                    allValid = false;
+                }
+            }
+            isPasswordValid = allValid;
+            parolaEslesmeKontrolEt(); 
+        }
+
+        function parolaEslesmeKontrolEt() {
+            const p1 = document.getElementById('password').value;
+            const p2 = document.getElementById('password-confirm').value;
+            const msg = document.getElementById('match-msg');
+
+            if (p2.length === 0) {
+                msg.style.display = 'none';
+                return;
+            }
+            msg.style.display = 'block';
+            if (p1 === p2) {
+                msg.innerText = "✔ Parolalar eşleşiyor.";
+                msg.style.color = "#10b981";
+            } else {
+                msg.innerText = "✖ Parolalar eşleşmiyor.";
+                msg.style.color = "#ef4444";
+            }
+        }
+
+        async function sifreyiGuncelle() {
+            const p1 = document.getElementById('password').value;
+            const p2 = document.getElementById('password-confirm').value;
+            const token = document.getElementById('reset-token').value;
+
+            if (!token) {
+                showNotification("Güvenlik jetonu (token) eksik. Lütfen mailinizdeki linke tekrar tıklayın.", "error");
+                return;
+            }
+
+            if (!p1 || !p2) {
+                showNotification("Lütfen parolanızı eksiksiz girin.", "error");
+                return;
+            }
+            if (!isPasswordValid) {
+                showNotification("Lütfen tüm güvenlik kurallarını karşılayan bir parola belirleyin.", "error");
+                return;
+            }
+            if (p1 !== p2) {
+                showNotification("Girdiğiniz parolalar eşleşmiyor.", "error");
+                return;
+            }
+
+            const btn = document.getElementById('submitBtn');
+            const originalText = btn.innerText;
+            btn.innerText = "Güncelleniyor...";
+            btn.disabled = true;
+
+            const formData = new FormData();
+            formData.append("token", token);
+            formData.append("yeni_sifre", p1);
+
+            try {
+                // Arka plana (/yeni-sifre-belirle) rotasına gönderiyoruz
+                const response = await fetch('/yeni-sifre-belirle', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showNotification(data.mesaj, "success"); 
+                    setTimeout(() => {
+                        window.location.href = "/"; // Başarılıysa login ekranına at
+                    }, 2000);
+                } else {
+                    const errorData = await response.json();
+                    showNotification(errorData.detail || "Şifre güncellenirken hata oluştu.", "error");
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                console.error("Hata:", error);
+                showNotification("Sunucuya ulaşılamıyor. Lütfen bağlantınızı kontrol edin.", "error");
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+    </script>
+
+</body>
+</html>
