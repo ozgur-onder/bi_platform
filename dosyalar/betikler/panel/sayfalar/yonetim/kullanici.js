@@ -16,6 +16,25 @@ const KullaniciYonetimi = (function () {
         }
     }
 
+    function tarihiBicimlendir(tarihStr) {
+        if (!tarihStr) return "-";
+        try {
+            const tarih = new Date(tarihStr);
+            if (isNaN(tarih.getTime())) return tarihStr; 
+
+            const gun = String(tarih.getDate()).padStart(2, '0');
+            const ay = String(tarih.getMonth() + 1).padStart(2, '0');
+            const yil = tarih.getFullYear();
+            const saat = String(tarih.getHours()).padStart(2, '0');
+            const dakika = String(tarih.getMinutes()).padStart(2, '0');
+            const saniye = String(tarih.getSeconds()).padStart(2, '0');
+
+            return `${gun}.${ay}.${yil} ${saat}:${dakika}:${saniye}`;
+        } catch (e) {
+            return tarihStr;
+        }
+    }
+
     function yeniKullaniciModalAc(basariCallback) {
         const sablon = document.getElementById("sablon-kullanici-modal");
         if (!sablon) return;
@@ -45,11 +64,10 @@ const KullaniciYonetimi = (function () {
                 const tamAd = inputAdi.value.trim();
 
                 if (!kullaniciKodu || !tamAd) {
-                    alert("Lütfen tüm alanları doldurun.");
+                    bildirimGoster("Lütfen tüm alanları doldurun.", "uyari");
                     return;
                 }
 
-                // Ad ve Soyadı ayır (Son kelime soyad)
                 const adParcalari = tamAd.split(" ");
                 const soyad = adParcalari.length > 1 ? adParcalari.pop() : "";
                 const ad = adParcalari.join(" ");
@@ -71,10 +89,10 @@ const KullaniciYonetimi = (function () {
                         kapat();
                         if (basariCallback) basariCallback();
                     } else {
-                        alert("Kullanıcı eklenemedi.");
+                        bildirimGoster("Kullanıcı eklenemedi.", "hata");
                     }
                 } catch (e) {
-                    alert("Sunucu bağlantı hatası.");
+                    bildirimGoster("Sunucu bağlantı hatası.", "hata");
                 }
             });
         }
@@ -103,7 +121,6 @@ const KullaniciYonetimi = (function () {
             }
 
             try {
-                // Veritabanından verileri çektiğimiz adres
                 const yanit = await fetch("/api/kullanici");
                 
                 if (yanit.ok) {
@@ -111,7 +128,7 @@ const KullaniciYonetimi = (function () {
                     globalKullaniciVerisi = kullanicilar;
 
                     if (kullanicilar.length === 0) {
-                        tabloGovdesi.innerHTML = '<tr><td colspan="5" class="yukleniyor">Kayıtlı kullanıcı bulunmuyor.</td></tr>';
+                        tabloGovdesi.innerHTML = '<tr><td colspan="6" class="yukleniyor">Kayıtlı kullanıcı bulunmuyor.</td></tr>';
                         return;
                     }
 
@@ -121,13 +138,15 @@ const KullaniciYonetimi = (function () {
                     kullanicilar.forEach(kullanici => {
                         const satirKlon = satirSablonu.content.cloneNode(true);
 
-                        // PostgreSQL'den gelen doğru sütun adları
                         satirKlon.querySelector(".kullanici-kodu").textContent = kullanici.sicil || "-";
                         satirKlon.querySelector(".kullanici-adi").textContent = `${kullanici.ad || ""} ${kullanici.soyad || ""}`.trim();
+                        satirKlon.querySelector(".kullanici-eposta").textContent = kullanici.email || "-";
 
-                        const detayMetni = `${kullanici.olusturan_kullanici_id || "-"} — ${kullanici.olusturma_zamani ? kullanici.olusturma_zamani.split('T')[0] : "-"}`;
-                        satirKlon.querySelector(".kullanici-detay").textContent = detayMetni;
+                        const islemYapanAd = kullanici.olusturan_ad_soyad || kullanici.olusturan_kullanici_id || "Sistem";
+                        const formatliZaman = tarihiBicimlendir(kullanici.olusturma_zamani);
+                        satirKlon.querySelector(".kullanici-detay").textContent = `${islemYapanAd} — ${formatliZaman}`;
 
+                        // --- PASİFE AL / AKTİFLEŞTİR BUTONU ---
                         let aktifMi = kullanici.durum === true || kullanici.durum === "true";
                         const badge = satirKlon.querySelector(".durum-badge");
                         const aksiyonBtn = satirKlon.querySelector(".aksiyon-btn");
@@ -161,23 +180,55 @@ const KullaniciYonetimi = (function () {
                                     if (idx !== -1) globalKullaniciVerisi[idx].durum = yeniDurum;
                                 } else {
                                     satirDurumGuncelle(aktifMi);
-                                    alert("Durum güncellenemedi.");
+                                    bildirimGoster("Durum güncellenemedi.", "hata");
                                 }
                             } catch (e) {
                                 satirDurumGuncelle(aktifMi);
-                                alert("İşlem sırasında hata oluştu.");
+                                bildirimGoster("İşlem sırasında hata oluştu.", "hata");
                             } finally {
                                 aksiyonBtn.disabled = false;
+                            }
+                        });
+
+                        // --- ŞİFRE GÖNDER BUTONU ---
+                        const sifreBtn = satirKlon.querySelector(".sifre-btn");
+                        sifreBtn.addEventListener("click", async function () {
+                            const orjinalYazi = sifreBtn.innerText;
+                            sifreBtn.innerText = "Gönderiliyor...";
+                            sifreBtn.disabled = true;
+
+                            const formVerisi = new FormData();
+                            formVerisi.append("sicil", kullanici.sicil);
+                            formVerisi.append("email", kullanici.email);
+
+                            try {
+                                const istek = await fetch("/sifre-sifirlama-talep", {
+                                    method: "POST",
+                                    body: formVerisi
+                                });
+
+                                const cevap = await istek.json();
+
+                                if (istek.ok) {
+                                    bildirimGoster(cevap.mesaj || "Şifre sıfırlama e-postası gönderildi.", "basari", 3);
+                                } else {
+                                    bildirimGoster(cevap.detail || "Bir hata oluştu, lütfen tekrar deneyin.", "hata");
+                                }
+                            } catch (hata) {
+                                bildirimGoster("Sunucuya ulaşılamıyor. Lütfen bağlantınızı kontrol edin.", "hata");
+                            } finally {
+                                sifreBtn.innerText = orjinalYazi;
+                                sifreBtn.disabled = false;
                             }
                         });
 
                         tabloGovdesi.appendChild(satirKlon);
                     });
                 } else {
-                    tabloGovdesi.innerHTML = '<tr><td colspan="5" class="yukleniyor" style="color: #ef4444;">Sunucudan veri alınamadı. (API adresi eksik olabilir)</td></tr>';
+                    tabloGovdesi.innerHTML = '<tr><td colspan="6" class="yukleniyor" style="color: #ef4444;">Sunucudan veri alınamadı.</td></tr>';
                 }
             } catch (hata) {
-                tabloGovdesi.innerHTML = '<tr><td colspan="5" class="yukleniyor" style="color: #ef4444;">Sunucuya bağlanılamadı.</td></tr>';
+                tabloGovdesi.innerHTML = '<tr><td colspan="6" class="yukleniyor" style="color: #ef4444;">Sunucuya bağlanılamadı.</td></tr>';
             }
         });
     }
