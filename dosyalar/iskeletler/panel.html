@@ -135,7 +135,7 @@
                 </div>
             </div>
 
-            <!-- Rol Yönetimi Kartı Eklendi -->
+            <!-- Rol Yönetimi Kartı -->
             <div id="kart-rol" class="kart kart-tıklanabilir">
                 <div class="katalog-kart">
                     <div class="katalog-ikon-kap">
@@ -146,6 +146,16 @@
                 </div>
             </div>
             
+            <!-- Kullanıcı Yönetimi Kartı -->
+            <div id="kart-kullanici" class="kart kart-tıklanabilir">
+                <div class="katalog-kart">
+                    <div class="katalog-ikon-kap">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    </div>
+                    <h3 class="katalog-kart-baslik">Kullanıcı Yönetimi</h3>
+                    <p class="katalog-kart-aciklama">Sistemdeki kullanıcıları, yetkilerini ve aktiflik durumlarını yönetin.</p>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -267,7 +277,6 @@
             
             <div class="form-grup">
                 <label class="form-etiket">Rol Kodu</label>
-                <!-- type="number" yerine type="text" yapıldı ve oklar kaldırıldı -->
                 <input type="text" inputmode="numeric" id="modal-rol-kodu" class="form-girdi" placeholder="Örn: 101">
             </div>
             
@@ -284,6 +293,73 @@
     </div>
 </template>
 
+<!-- Kullanıcı Yönetimi Şablonları -->
+<template id="sablon-kullanici-listesi">
+    <div class="sayfa-icerik">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
+            <div>
+                <h2 class="sayfa-baslik">Kullanıcı Yönetimi</h2>
+                <p class="sayfa-aciklama">Sistemdeki kullanıcıları, aktiflik durumlarını, işlem yapan kullanıcıları ve tarihçelerini yönetin.</p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button id="kullanici-log-aktar-btn" class="btn btn-ikincil">Logları İndir</button>
+                <button id="kullanici-excel-aktar-btn" class="btn btn-basari">Excel'e Aktar</button>
+                <button id="yeni-kullanici-btn" class="btn btn-birincil">+ Yeni Kullanıcı Ekle</button>
+            </div>
+        </div>
+
+        <div class="tablo-kap">
+            <table class="tablo">
+                <thead>
+                    <tr>
+                        <th>KULLANICI KODU</th>
+                        <th>KULLANICI ADI</th>
+                        <th>DURUM</th>
+                        <th>SON İŞLEM YAPAN / ZAMAN</th>
+                        <th>İŞLEM</th>
+                    </tr>
+                </thead>
+                <tbody id="kullanici-tablo-govdesi">
+                    <tr><td colspan="5" class="yukleniyor">Veriler yükleniyor...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</template>
+
+<template id="sablon-kullanici-satiri">
+    <tr>
+        <td class="kullanici-kodu" style="font-weight: 500;"></td>
+        <td class="kullanici-adi"></td>
+        <td><span class="badge durum-badge"></span></td>
+        <td class="kullanici-detay" style="font-size: 12px; color: var(--renk-yazi-ikincil);"></td>
+        <td><button class="btn btn-kucuk aksiyon-btn"></button></td>
+    </tr>
+</template>
+
+<template id="sablon-kullanici-modal">
+    <div class="hata-modal-arkaplan" id="kullanici-modal-arkaplan" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.75); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+        <div class="hata-modal-kutu" style="background-color: var(--renk-kart, #1e293b); padding: 32px; border-radius: 16px; width: 90%; max-width: 440px; text-align: left; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); border: 1px solid var(--renk-sinir, rgba(255,255,255,0.05));">
+            <h3 class="hata-modal-baslik" style="margin: 0 0 20px 0; font-size: 20px; font-weight: 600; color: var(--renk-yazi-birincil, #fff); text-align: center;">Yeni Kullanıcı Tanımla</h3>
+            
+            <div class="form-grup">
+                <label class="form-etiket">Kullanıcı Kodu</label>
+                <input type="text" id="modal-kullanici-kodu" class="form-girdi" placeholder="Örn: ozgur.onder">
+            </div>
+            
+            <div class="form-grup" style="margin-bottom: 24px;">
+                <label class="form-etiket">Ad Soyad</label>
+                <input type="text" id="modal-kullanici-adi" class="form-girdi" placeholder="Kullanıcının Tam Adı">
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button id="modal-kullanici-iptal-btn" class="btn btn-ikincil" style="flex: 1; justify-content: center;">İptal</button>
+                <button id="modal-kullanici-kaydet-btn" class="btn btn-birincil" style="flex: 1; justify-content: center;">Kaydet</button>
+            </div>
+        </div>
+    </div>
+</template>
+
 
 <script src="/dosyalar/betikler/ortak/bildirim.js"></script>
 <script src="/dosyalar/betikler/panel/tema.js"></script>
@@ -294,6 +370,7 @@
 <script src="/dosyalar/betikler/panel/sayfalar/yonetim/katalog.js"></script>
 <script src="/dosyalar/betikler/panel/sayfalar/yonetim/firma.js"></script>
 <script src="/dosyalar/betikler/panel/sayfalar/yonetim/rol.js"></script>
+<script src="/dosyalar/betikler/panel/sayfalar/yonetim/kullanici.js"></script>
 <script src="/dosyalar/betikler/panel/uygulama.js"></script>
 
 </body>
