@@ -143,3 +143,29 @@ async def firma_loglari_getir() -> dict:
     finally:
         if cursor: cursor.close()
         if conn:   conn.close()
+
+import sys
+
+async def firma_duzenle(eski_kodu: str, yeni_kodu: str, yeni_adi: str, islem_yapan_sicil: str) -> dict:
+    conn = cursor = None
+    try:
+        conn = db_baglan()
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            UPDATE firma 
+            SET firma_kodu=%s, firma_adi=%s 
+            WHERE firma_kodu=%s
+        """, (yeni_kodu, yeni_adi, eski_kodu))
+        
+        # Eğer işlem logları tutuyorsanız buraya log insert'i de ekleyebilirsiniz
+        
+        conn.commit()
+        return {"icerik": {"mesaj": "Firma bilgileri başarıyla güncellendi."}, "statu": 200}
+    except Exception as e:
+        if conn: conn.rollback()
+        print(f"[firma_duzenle] Hata: {e}", file=sys.stderr)
+        return {"icerik": {"detail": "Firma güncellenemedi. Yeni yazdığınız firma kodu başka bir firmaya ait olabilir."}, "statu": 500}
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()

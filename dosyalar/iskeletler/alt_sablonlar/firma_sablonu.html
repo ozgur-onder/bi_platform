@@ -6,9 +6,18 @@
                 <p class="sayfa-aciklama">Sistemdeki firmaları, aktiflik durumlarını, işlem yapan kullanıcıları ve tarihçelerini yönetin.</p>
             </div>
             <div style="display: flex; gap: 8px;">
-                <button id="log-aktar-btn" class="btn btn-ikincil">Logları İndir</button>
-                <button id="excel-aktar-btn" class="btn btn-basari">Excel'e Aktar</button>
-                <button id="yeni-firma-btn" class="btn btn-birincil">+ Yeni Firma Ekle</button>
+                <button id="log-aktar-btn" class="btn btn-ikincil" style="display: inline-flex; align-items: center; gap: 6px;">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Logları İndir
+                </button>
+                <button id="excel-aktar-btn" class="btn btn-basari" style="display: inline-flex; align-items: center; gap: 6px;">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    Excel'e Aktar
+                </button>
+                <button id="yeni-firma-btn" class="btn btn-birincil" style="display: inline-flex; align-items: center; gap: 6px;">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Yeni Firma Ekle
+                </button>
             </div>
         </div>
 
@@ -37,15 +46,23 @@
         <td class="firma-adi"></td>
         <td><span class="badge durum-badge"></span></td>
         <td class="firma-detay" style="font-size: 12px; color: var(--renk-yazi-ikincil);"></td>
-        <td><button class="btn btn-kucuk aksiyon-btn"></button></td>
+        <td style="display: flex; gap: 6px; align-items: center;">
+            <button class="btn btn-kucuk btn-birincil duzenle-btn" style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px;">
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                Düzenle
+            </button>
+            <button class="btn btn-kucuk aksiyon-btn" style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px;"></button>
+        </td>
     </tr>
 </template>
 
 <template id="sablon-firma-modal">
     <div class="hata-modal-arkaplan" id="firma-modal-arkaplan" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.75); display: flex; align-items: center; justify-content: center; z-index: 9999;">
         <div class="hata-modal-kutu" style="background-color: var(--renk-kart, #1e293b); padding: 32px; border-radius: 16px; width: 90%; max-width: 440px; text-align: left; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); border: 1px solid var(--renk-sinir, rgba(255,255,255,0.05));">
-            <h3 class="hata-modal-baslik" style="margin: 0 0 20px 0; font-size: 20px; font-weight: 600; color: var(--renk-yazi-birincil, #fff); text-align: center;">Yeni Firma Tanımla</h3>
+            <h3 class="hata-modal-baslik" id="modal-firma-baslik" style="margin: 0 0 20px 0; font-size: 20px; font-weight: 600; color: var(--renk-yazi-birincil, #fff); text-align: center;">Yeni Firma Tanımla</h3>
             
+            <input type="hidden" id="modal-firma-eski-kodu">
+
             <div class="form-grup">
                 <label class="form-etiket">Firma Kodu</label>
                 <input type="text" id="modal-firma-kodu" class="form-girdi" placeholder="Örn: VNT" style="text-transform: uppercase;">

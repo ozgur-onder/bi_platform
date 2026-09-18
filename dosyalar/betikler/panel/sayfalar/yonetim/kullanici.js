@@ -1,5 +1,5 @@
-const KullaniciYonetimi = (function () {
-    let globalKullaniciVerisi = [];
+(function () {
+    let globalFirmaVerisi = [];
 
     function excelIndir(veriDizisi, dosyaAdi, sayfaAdi) {
         if (!veriDizisi || veriDizisi.length === 0) {
@@ -16,40 +16,64 @@ const KullaniciYonetimi = (function () {
         }
     }
 
-    function tarihiBicimlendir(tarihStr) {
-        if (!tarihStr) return "-";
-        try {
-            const tarih = new Date(tarihStr);
-            if (isNaN(tarih.getTime())) return tarihStr; 
+    function yonetimSekmesiAc() {
+        Sekme.ac("yonetim", "Yönetim", (icerikAlani) => {
+            const sablon = document.getElementById("sablon-yonetim");
+            if (!sablon) {
+                console.error("sablon-yonetim bulunamadı!");
+                return;
+            }
 
-            const gun = String(tarih.getDate()).padStart(2, '0');
-            const ay = String(tarih.getMonth() + 1).padStart(2, '0');
-            const yil = tarih.getFullYear();
-            const saat = String(tarih.getHours()).padStart(2, '0');
-            const dakika = String(tarih.getMinutes()).padStart(2, '0');
-            const saniye = String(tarih.getSeconds()).padStart(2, '0');
+            icerikAlani.innerHTML = "";
+            icerikAlani.appendChild(sablon.content.cloneNode(true));
 
-            return `${gun}.${ay}.${yil} ${saat}:${dakika}:${saniye}`;
-        } catch (e) {
-            return tarihStr;
-        }
+            // FİRMA KARTI BAĞLANTISI
+            const firmaKarti = icerikAlani.querySelector("#kart-firma");
+            if (firmaKarti) {
+                firmaKarti.addEventListener("click", firmaListesiSekmesiAc);
+            }
+
+            // ROL KARTI BAĞLANTISI
+            const rolKarti = icerikAlani.querySelector("#kart-rol");
+            if (rolKarti) {
+                rolKarti.addEventListener("click", () => {
+                    if (typeof RolYonetimi !== 'undefined') {
+                        RolYonetimi.baslat();
+                    } else {
+                        alert("Rol modülü yüklenemedi.");
+                    }
+                });
+            }
+
+            // KULLANICI KARTI BAĞLANTISI
+            const kullaniciKarti = icerikAlani.querySelector("#kart-kullanici");
+            if (kullaniciKarti) {
+                kullaniciKarti.addEventListener("click", () => {
+                    if (typeof KullaniciYonetimi !== 'undefined') {
+                        KullaniciYonetimi.baslat();
+                    } else {
+                        alert("Kullanıcı modülü yüklenemedi.");
+                    }
+                });
+            }
+        });
     }
 
-    function yeniKullaniciModalAc(basariCallback) {
-        const sablon = document.getElementById("sablon-kullanici-modal");
+    function yeniFirmaModalAc(basariCallback) {
+        const sablon = document.getElementById("sablon-firma-modal");
         if (!sablon) return;
 
         const modalKlon = sablon.content.cloneNode(true);
-        const arkaplan = modalKlon.querySelector("#kullanici-modal-arkaplan");
+        const arkaplan = modalKlon.querySelector("#firma-modal-arkaplan");
         
         document.body.appendChild(arkaplan);
 
-        const inputKodu = arkaplan.querySelector("#modal-kullanici-kodu"); 
-        const inputAdi = arkaplan.querySelector("#modal-kullanici-adi"); 
-        const btnKaydet = arkaplan.querySelector("#modal-kullanici-kaydet-btn");
-        const btnIptal = arkaplan.querySelector("#modal-kullanici-iptal-btn");
+        const inputKod = arkaplan.querySelector("#modal-firma-kodu");
+        const inputAdi = arkaplan.querySelector("#modal-firma-adi");
+        const btnKaydet = arkaplan.querySelector("#modal-kaydet-btn");
+        const btnIptal = arkaplan.querySelector("#modal-iptal-btn");
 
-        if (inputKodu) inputKodu.focus();
+        if (inputKod) inputKod.focus();
 
         const kapat = () => arkaplan.remove();
 
@@ -60,94 +84,96 @@ const KullaniciYonetimi = (function () {
 
         if (btnKaydet) {
             btnKaydet.addEventListener("click", async () => {
-                const kullaniciKodu = inputKodu.value.trim();
-                const tamAd = inputAdi.value.trim();
+                const firmaKodu = inputKod.value.trim().toUpperCase();
+                const firmaAdi = inputAdi.value.trim();
 
-                if (!kullaniciKodu || !tamAd) {
-                    bildirimGoster("Lütfen tüm alanları doldurun.", "uyari");
+                if (!firmaKodu || !firmaAdi) {
+                    alert("Lütfen tüm alanları doldurun.");
                     return;
                 }
 
-                const adParcalari = tamAd.split(" ");
-                const soyad = adParcalari.length > 1 ? adParcalari.pop() : "";
-                const ad = adParcalari.join(" ");
-
                 try {
-                    const yanit = await fetch("/api/kullanici", {
+                    const yanit = await fetch("/api/firma", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ 
-                            sicil: kullaniciKodu, 
-                            ad: ad, 
-                            soyad: soyad,
-                            email: `${kullaniciKodu.toLowerCase()}@viontra.com`,
-                            durum: true
-                        })
+                        body: JSON.stringify({ firma_kodu: firmaKodu, firma_adi: firmaAdi })
                     });
 
                     if (yanit.ok) {
                         kapat();
                         if (basariCallback) basariCallback();
                     } else {
-                        bildirimGoster("Kullanıcı eklenemedi.", "hata");
+                        alert("Firma eklenemedi (Mükerrer kod veya yetki sorunu).");
                     }
                 } catch (e) {
-                    bildirimGoster("Sunucu bağlantı hatası.", "hata");
+                    alert("Sunucu bağlantı hatası.");
                 }
             });
         }
     }
 
-    function kullaniciListesiSekmesiAc() {
-        Sekme.ac("kullanici_listesi", "Kullanıcı Yönetimi", async (icerikAlani) => {
-            const sablon = document.getElementById("sablon-kullanici-listesi");
-            if (!sablon) return;
+    function firmaListesiSekmesiAc() {
+        Sekme.ac("firma_listesi", "Firma Yönetimi", async (icerikAlani) => {
+            const sablon = document.getElementById("sablon-firma-listesi");
+            if (!sablon) {
+                console.error("sablon-firma-listesi bulunamadı!");
+                return;
+            }
 
             icerikAlani.innerHTML = "";
             icerikAlani.appendChild(sablon.content.cloneNode(true));
 
-            const tabloGovdesi = icerikAlani.querySelector("#kullanici-tablo-govdesi");
+            const tabloGovdesi = icerikAlani.querySelector("#firma-tablo-govdesi");
 
-            const excelBtn = icerikAlani.querySelector("#kullanici-excel-aktar-btn");
+            const excelBtn = icerikAlani.querySelector("#excel-aktar-btn");
             if (excelBtn) {
-                excelBtn.addEventListener("click", () => excelIndir(globalKullaniciVerisi, "Kullanici_Listesi.xlsx", "Kullanıcılar"));
+                excelBtn.addEventListener("click", () => excelIndir(globalFirmaVerisi, "Firma_Listesi.xlsx", "Firmalar"));
             }
 
-            const ekleBtn = icerikAlani.querySelector("#yeni-kullanici-btn");
+            const logBtn = icerikAlani.querySelector("#log-aktar-btn");
+            if (logBtn) {
+                logBtn.addEventListener("click", async () => {
+                    try {
+                        const yanit = await fetch("/api/firma/loglar");
+                        if (yanit.ok) excelIndir(await yanit.json(), "Firma_Guncelleme_Loglari.xlsx", "Loglar");
+                        else alert("Loglar alınamadı.");
+                    } catch (hata) {
+                        alert("Sunucu bağlantı hatası.");
+                    }
+                });
+            }
+
+            const ekleBtn = icerikAlani.querySelector("#yeni-firma-btn");
             if (ekleBtn) {
                 ekleBtn.addEventListener("click", () => {
-                    yeniKullaniciModalAc(() => kullaniciListesiSekmesiAc());
+                    yeniFirmaModalAc(() => firmaListesiSekmesiAc());
                 });
             }
 
             try {
-                const yanit = await fetch("/api/kullanici");
-                
+                const yanit = await fetch("/api/firma");
                 if (yanit.ok) {
-                    const kullanicilar = await yanit.json();
-                    globalKullaniciVerisi = kullanicilar;
+                    const firmalar = await yanit.json();
+                    globalFirmaVerisi = firmalar;
 
-                    if (kullanicilar.length === 0) {
-                        tabloGovdesi.innerHTML = '<tr><td colspan="6" class="yukleniyor">Kayıtlı kullanıcı bulunmuyor.</td></tr>';
+                    if (firmalar.length === 0) {
+                        tabloGovdesi.innerHTML = '<tr><td colspan="5" class="yukleniyor">Kayıtlı firma bulunmuyor.</td></tr>';
                         return;
                     }
 
                     tabloGovdesi.innerHTML = "";
-                    const satirSablonu = document.getElementById("sablon-kullanici-satiri");
+                    const satirSablonu = document.getElementById("sablon-firma-satiri");
 
-                    kullanicilar.forEach(kullanici => {
+                    firmalar.forEach(firma => {
                         const satirKlon = satirSablonu.content.cloneNode(true);
 
-                        satirKlon.querySelector(".kullanici-kodu").textContent = kullanici.sicil || "-";
-                        satirKlon.querySelector(".kullanici-adi").textContent = `${kullanici.ad || ""} ${kullanici.soyad || ""}`.trim();
-                        satirKlon.querySelector(".kullanici-eposta").textContent = kullanici.email || "-";
+                        satirKlon.querySelector(".firma-kodu").textContent = firma["Firma Kodu"];
+                        satirKlon.querySelector(".firma-adi").textContent = firma["Firma Adı"];
 
-                        const islemYapanAd = kullanici.olusturan_ad_soyad || kullanici.olusturan_kullanici_id || "Sistem";
-                        const formatliZaman = tarihiBicimlendir(kullanici.olusturma_zamani);
-                        satirKlon.querySelector(".kullanici-detay").textContent = `${islemYapanAd} — ${formatliZaman}`;
+                        const detayMetni = `${firma["İşlem Yapan Sicil"]} — ${firma["Son İşlem Zamanı"]}`;
+                        satirKlon.querySelector(".firma-detay").textContent = detayMetni;
 
-                        // --- PASİFE AL / AKTİFLEŞTİR BUTONU ---
-                        let aktifMi = kullanici.durum === true || kullanici.durum === "true";
+                        let aktifMi = firma["Durum"] === "Aktif";
                         const badge = satirKlon.querySelector(".durum-badge");
                         const aksiyonBtn = satirKlon.querySelector(".aksiyon-btn");
 
@@ -164,11 +190,12 @@ const KullaniciYonetimi = (function () {
 
                         aksiyonBtn.addEventListener("click", async function () {
                             const yeniDurum = !aktifMi;
+
                             satirDurumGuncelle(yeniDurum);
                             aksiyonBtn.disabled = true;
 
                             try {
-                                const y = await fetch(`/api/kullanici/${kullanici.sicil}/durum`, {
+                                const y = await fetch(`/api/firma/${firma["Firma Kodu"]}/durum`, {
                                     method: "PATCH",
                                     headers: { "Content-Type": "application/json" },
                                     body: JSON.stringify({ durum: yeniDurum })
@@ -176,79 +203,33 @@ const KullaniciYonetimi = (function () {
 
                                 if (y.ok) {
                                     aktifMi = yeniDurum;
-                                    const idx = globalKullaniciVerisi.findIndex(k => k.sicil === kullanici.sicil);
-                                    if (idx !== -1) globalKullaniciVerisi[idx].durum = yeniDurum;
+                                    const idx = globalFirmaVerisi.findIndex(f => f["Firma Kodu"] === firma["Firma Kodu"]);
+                                    if (idx !== -1) globalFirmaVerisi[idx]["Durum"] = yeniDurum ? "Aktif" : "Pasif";
                                 } else {
                                     satirDurumGuncelle(aktifMi);
-                                    bildirimGoster("Durum güncellenemedi.", "hata");
+                                    alert("Durum güncellenemedi.");
                                 }
                             } catch (e) {
                                 satirDurumGuncelle(aktifMi);
-                                bildirimGoster("İşlem sırasında hata oluştu.", "hata");
+                                alert("İşlem sırasında hata oluştu.");
                             } finally {
                                 aksiyonBtn.disabled = false;
                             }
                         });
 
-                        // --- ŞİFRE GÖNDER BUTONU ---
-                        const sifreBtn = satirKlon.querySelector(".sifre-btn");
-                        sifreBtn.addEventListener("click", async function () {
-                            const orjinalYazi = sifreBtn.innerText;
-                            sifreBtn.innerText = "Gönderiliyor...";
-                            sifreBtn.disabled = true;
-
-                            const formVerisi = new FormData();
-                            formVerisi.append("sicil", kullanici.sicil);
-                            formVerisi.append("email", kullanici.email);
-
-                            try {
-                                const istek = await fetch("/sifre-sifirlama-talep", {
-                                    method: "POST",
-                                    body: formVerisi
-                                });
-
-                                const cevap = await istek.json();
-
-                                if (istek.ok) {
-                                    bildirimGoster(cevap.mesaj || "Şifre sıfırlama e-postası gönderildi.", "basari", 3);
-                                } else {
-                                    bildirimGoster(cevap.detail || "Bir hata oluştu, lütfen tekrar deneyin.", "hata");
-                                }
-                            } catch (hata) {
-                                bildirimGoster("Sunucuya ulaşılamıyor. Lütfen bağlantınızı kontrol edin.", "hata");
-                            } finally {
-                                sifreBtn.innerText = orjinalYazi;
-                                sifreBtn.disabled = false;
-                            }
-                        });
-
                         tabloGovdesi.appendChild(satirKlon);
                     });
-                } else {
-                    tabloGovdesi.innerHTML = '<tr><td colspan="6" class="yukleniyor" style="color: #ef4444;">Sunucudan veri alınamadı.</td></tr>';
                 }
             } catch (hata) {
-                tabloGovdesi.innerHTML = '<tr><td colspan="6" class="yukleniyor" style="color: #ef4444;">Sunucuya bağlanılamadı.</td></tr>';
+                tabloGovdesi.innerHTML = '<tr><td colspan="5" class="yukleniyor">Veri çekilemedi.</td></tr>';
             }
         });
     }
 
-    return {
-        baslat: kullaniciListesiSekmesiAc
-    };
-})();
-
-window.KullaniciYonetimi = KullaniciYonetimi;
-
-document.addEventListener("DOMContentLoaded", () => {
-    document.addEventListener("click", (e) => {
-        const kullaniciKarti = e.target.closest("#kart-kullanici");
-        if (kullaniciKarti) {
-            if (typeof window.KullaniciYonetimi !== 'undefined') {
-                window.KullaniciYonetimi.baslat();
-            } else {
-                alert("Kullanıcı modülü yüklenemedi.");
-            }
+    document.addEventListener("DOMContentLoaded", () => {
+        const yonetimBtn = document.querySelector('[data-sayfa="yonetim"]');
+        if (yonetimBtn) {
+            yonetimBtn.addEventListener("click", yonetimSekmesiAc);
         }
     });
-});
+})();

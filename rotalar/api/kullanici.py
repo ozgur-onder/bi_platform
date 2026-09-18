@@ -123,6 +123,28 @@ async def kullanici_ekle(yeni_kullanici: dict, kullanici: dict = Depends(oturum_
         if cursor: cursor.close()
         if conn: conn.close()
 
+@router.put("/kullanici/{eski_sicil}")
+async def kullanici_duzenle(eski_sicil: str, veri: dict, kullanici: dict = Depends(oturum_gerektir)):
+    """Mevcut kullanıcı bilgilerini günceller."""
+    conn = cursor = None
+    try:
+        conn = db_baglan()
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE kullanicilar 
+            SET sicil=%s, ad=%s, soyad=%s, email=%s 
+            WHERE sicil=%s
+        """, (veri["sicil"], veri["ad"], veri["soyad"], veri["email"], eski_sicil))
+        conn.commit()
+        return JSONResponse(content={"mesaj": "Kullanıcı bilgileri güncellendi."})
+    except Exception as e:
+        if conn: conn.rollback()
+        print(f"[kullanici_duzenle] Hata: {e}", file=sys.stderr)
+        return JSONResponse(content={"detail": "Kullanıcı güncellenemedi."}, status_code=500)
+    finally:
+        if cursor: cursor.close()
+        if conn: conn.close()
+
 @router.patch("/kullanici/{sicil_no}/durum")
 async def kullanici_durum_guncelle(sicil_no: str, veri: dict, kullanici: dict = Depends(oturum_gerektir)):
     """Kullanıcının aktif/pasif durumunu günceller."""
