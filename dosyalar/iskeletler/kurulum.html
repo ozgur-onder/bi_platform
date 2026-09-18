@@ -29,31 +29,31 @@
         <div class="form-panel kurulum-paneli">
             
             <div class="top-controls">
-                <button class="theme-toggle" title="Temayı Değiştir">
-                </button>
+                <button class="theme-toggle" title="Temayı Değiştir"></button>
             </div>
 
             <div class="form-wrapper">
                 <h2>Hoş Geldiniz</h2>
 
+                <!-- Adım 1: Yönetici Bilgileri -->
                 <div id="step-1" class="step-container active">
                     <span class="step-indicator">Adım 1/2: Sistem Yöneticisi</span>
                     
                     <div class="info-box">
-                        <strong>Sistem Yöneticisi Kullanıcısı Eklemek;</strong> Firma, rol ve diğer kullanıcı tanımlarını yapmak için gereklidir. Lütfen bilgileri daha sonra unutmayacak şekilde doldurunuz.
+                        <strong>Sistem Yöneticisi Hesabı:</strong> Firma, rol ve kullanıcı yönetimi işlemlerini yürütecek ana yetkili hesaptır. Ad ve soyad alanları otomatik olarak büyük harfle işlenecektir.
                     </div>
 
                     <div class="row-group">
                         <div class="input-group half-width">
                             <label for="ad">Ad</label>
                             <div class="input-wrapper">
-                                <input type="text" id="ad" class="no-icon-input" autocomplete="new-password" placeholder="Örn: Ahmet" required>
+                                <input type="text" id="ad" class="no-icon-input" style="text-transform: uppercase;" autocomplete="new-password" placeholder="Örn: AHMET" required>
                             </div>
                         </div>
                         <div class="input-group half-width">
                             <label for="soyad">Soyad</label>
                             <div class="input-wrapper">
-                                <input type="text" id="soyad" class="no-icon-input" autocomplete="new-password" placeholder="Örn: Yılmaz" required>
+                                <input type="text" id="soyad" class="no-icon-input" style="text-transform: uppercase;" autocomplete="new-password" placeholder="Örn: YILMAZ" required>
                             </div>
                         </div>
                     </div>
@@ -70,10 +70,13 @@
                             <div class="input-wrapper">
                                 <input type="email" id="email" class="no-icon-input" autocomplete="new-password" placeholder="admin@sirket.com" required>
                             </div>
+                            <!-- Canlı Mail Format Sınama Bildirimi -->
+                            <div id="emailCheckMsg" style="font-size: 11px; margin-top: 4px; display: none; font-weight: 500;"></div>
                         </div>
                     </div>
 
-                    <div class="input-group">
+                    <!-- Modern Parola Alanı ve Floating Popover -->
+                    <div class="input-group" style="position: relative;">
                         <label for="password">Yönetici Parolası</label>
                         <div class="input-wrapper sifre-kutusu-kapsayici">
                             <input type="password" id="password" class="no-icon-input" autocomplete="new-password" placeholder="Güçlü bir parola belirleyin" required>
@@ -81,16 +84,21 @@
                                 <svg id="eye1" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                             </button>
                         </div>
-                        <ul class="password-rules" id="rulesList">
-                            <li id="rule-len" class="rule-fail">✖ En az 12 karakter</li>
-                            <li id="rule-upper" class="rule-fail">✖ En az 1 büyük harf</li>
-                            <li id="rule-lower" class="rule-fail">✖ En az 1 küçük harf</li>
-                            <li id="rule-num" class="rule-fail">✖ En az 1 rakam</li>
-                            <li id="rule-spec" class="rule-fail">✖ En az 1 özel karakter</li>
-                        </ul>
+                        
+                        <!-- Modern Floating Password Rules Popover -->
+                        <div id="passwordPopover" style="position: absolute; left: 0; right: 0; top: 100%; margin-top: 6px; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.1); padding: 12px; border-radius: 8px; box-shadow: 0 15px 35px -5px rgba(0,0,0,0.5); z-index: 100; display: none; font-size: 12px;">
+                            <div style="font-weight: 600; margin-bottom: 6px; color: #fff;">Parola Güvenlik Gereksinimleri:</div>
+                            <ul class="password-rules" id="rulesList" style="list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                                <li id="rule-len" class="rule-fail">✖ En az 12 karakter</li>
+                                <li id="rule-upper" class="rule-fail">✖ En az 1 büyük harf</li>
+                                <li id="rule-lower" class="rule-fail">✖ En az 1 küçük harf</li>
+                                <li id="rule-num" class="rule-fail">✖ En az 1 rakam</li>
+                                <li id="rule-spec" class="rule-fail">✖ En az 1 özel karakter</li>
+                            </ul>
+                        </div>
                     </div>
 
-                    <div class="input-group">
+                    <div class="input-group" style="margin-top: 16px;">
                         <label for="password-confirm">Parolayı Onayla</label>
                         <div class="input-wrapper sifre-kutusu-kapsayici">
                             <input type="password" id="password-confirm" class="no-icon-input" autocomplete="new-password" placeholder="Parolayı tekrar girin" required>
@@ -101,13 +109,15 @@
                         <p id="match-msg" class="eslesme-mesaji"></p>
                     </div>
 
-                    <button class="login-btn ileri-btn" id="ileriBtn">İleri ➔</button>
+                    <button class="login-btn ileri-btn" id="ileriBtn" style="margin-top: 16px;">İleri ➔</button>
                 </div>
+
+                <!-- Adım 2: SMTP Yapılandırması -->
                 <div id="step-2" class="step-container">
-                    <span class="step-indicator">Adım 2/2: Mail (SMTP) Ayarları</span>
+                    <span class="step-indicator">Adım 2/2: E-Posta (SMTP) Ayarları</span>
                     
                     <div class="info-box">
-                        <strong>Otomatik mail gönderimi</strong> (şifre sıfırlama, rapor iletimi vb.) yapılmasını sağlayan hesap bilgilerinin girilmesi gereklidir. Tüm alanlar zorunludur.
+                        <strong>Kurumsal Bildirim Altyapısı:</strong> Şifre sıfırlama, kullanıcı aktivasyonu ve sistem raporlarının iletilebilmesi için geçerli bir SMTP sunucusu zorunludur. Devam etmeden önce bilgilerinizi <strong>"Bağlantıyı Sına"</strong> butonu ile test edebilirsiniz.
                     </div>
 
                     <div class="row-group">
@@ -150,6 +160,10 @@
                         </div>
                     </div>
 
+                    <div style="margin-bottom: 16px;">
+                        <button type="button" id="smtpTestBtn" class="btn-secondary" style="width: 100%; border-style: dashed;">🔌 Bağlantıyı Sına</button>
+                    </div>
+
                     <div class="button-group">
                         <button type="button" class="btn-secondary" id="geriBtn">← Geri Dön</button>
                         <button class="login-btn" id="submitBtn">Sistemi Başlat</button>
@@ -165,7 +179,6 @@
         </div>
     </div>
 
-    <!-- Modüler JS Dosyalarımız (Güncellendi) -->
     <script src="/dosyalar/betikler/kurulum/tema.js"></script>
     <script src="/dosyalar/betikler/kurulum/bildirim.js"></script>
     <script src="/dosyalar/betikler/kurulum/sifre_kontrol.js"></script>

@@ -52,6 +52,7 @@ CREATE TABLE roller (
     id SERIAL PRIMARY KEY,
     rol_kodu INT UNIQUE NOT NULL,          
     rol_adi VARCHAR(50) UNIQUE NOT NULL,   
+    durum BOOLEAN DEFAULT TRUE,
     olusturma_guncelleme_zamani TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     olusturan_guncelleyen_sicil VARCHAR(20)
 );
@@ -163,16 +164,11 @@ CREATE TABLE smtp_ayarlari (
 -- SMTP AYARLARI LOG TABLOSU
 CREATE TABLE smtp_ayarlari_loglari (
     id SERIAL PRIMARY KEY,
-    smtp_ayar_id INT,
-    islem_turu VARCHAR(50) NOT NULL,
-    eski_sunucu VARCHAR(255),
-    yeni_sunucu VARCHAR(255),
-    eski_kullanici_adi VARCHAR(255),
-    yeni_kullanici_adi VARCHAR(255),
+    firma_kodu VARCHAR(50) NOT NULL,
+    sunucu VARCHAR(255) NOT NULL,
+    yapilan_islem VARCHAR(255),
     islem_zamani TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    islem_yapan_kullanici_sicil VARCHAR(20),
-    FOREIGN KEY (smtp_ayar_id) REFERENCES smtp_ayarlari(id),
-    FOREIGN KEY (islem_yapan_kullanici_sicil) REFERENCES kullanicilar(sicil)
+    islem_yapan_kullanici_sicil VARCHAR(20)
 );
 
 INSERT INTO firma (firma_kodu, firma_adi, olusturan_guncelleyen_sicil) 
@@ -181,8 +177,8 @@ VALUES ('F001', 'Yönetim Merkezi', 'SYSTEM');
 INSERT INTO firma_guncelleme_loglari (firma_kodu, firma_adi, yapilan_islem, islem_yapan_kullanici_sicil)
 VALUES ('F001', 'Yönetim Merkezi', 'Firma Eklendi', 'SYSTEM');
 
-INSERT INTO roller (rol_kodu, rol_adi, olusturan_guncelleyen_sicil) 
-VALUES (1, 'Sistem Yöneticisi', 'SYSTEM');
+INSERT INTO roller (rol_kodu, rol_adi, durum, olusturan_guncelleyen_sicil) 
+VALUES (1, 'Sistem Yöneticisi', true, 'SYSTEM');
 
 INSERT INTO rol_guncelleme_loglari (firma_kodu, firma_adi, yapilan_islem, islem_yapan_kullanici_sicil)
 VALUES ('1', 'Sistem Yöneticisi', 'Rol Eklendi', 'SYSTEM');

@@ -1,6 +1,7 @@
 window.isPasswordValid = false;
 
 document.addEventListener("DOMContentLoaded", function () {
+    // Şifre Göster/Gizle Mekanizması
     function sifreGosterGizleAyarla(btnClass, inputId, iconId) {
         const btn = document.querySelector(btnClass);
         const input = document.getElementById(inputId);
@@ -25,6 +26,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const passwordInput = document.getElementById('password');
     const confirmInput = document.getElementById('password-confirm');
+    const passwordPopover = document.getElementById('passwordPopover');
+
+    // Floating Popover Göster/Gizle Mantığı
+    if (passwordInput && passwordPopover) {
+        passwordInput.addEventListener('focus', function() {
+            passwordPopover.style.display = 'block';
+        });
+        passwordInput.addEventListener('blur', function() {
+            // Küçük bir gecikmeyle kapat (tıklama algılansın diye)
+            setTimeout(() => {
+                if (document.activeElement !== passwordInput) {
+                    passwordPopover.style.display = 'none';
+                }
+            }, 200);
+        });
+    }
 
     function parolaEslesmeKontrolEt() {
         if(!passwordInput || !confirmInput) return;
@@ -39,10 +56,10 @@ document.addEventListener("DOMContentLoaded", function () {
         msg.style.display = 'block';
         if (p1 === p2) {
             msg.innerText = "✔ Parolalar eşleşiyor.";
-            msg.style.color = "var(--basari-renk)";
+            msg.style.color = "var(--basari-renk, #10b981)";
         } else {
             msg.innerText = "✖ Parolalar eşleşmiyor.";
-            msg.style.color = "var(--hata-renk)";
+            msg.style.color = "var(--hata-renk, #ef4444)";
         }
     }
 
@@ -60,14 +77,22 @@ document.addEventListener("DOMContentLoaded", function () {
             let allValid = true;
             for (const [id, passed] of Object.entries(checks)) {
                 const el = document.getElementById(id);
-                if (passed) {
-                    el.className = 'rule-pass';
-                    el.innerText = el.innerText.replace('✖', '✔');
-                } else {
-                    el.className = 'rule-fail';
-                    el.innerText = el.innerText.replace('✔', '✖');
-                    allValid = false;
+                if (el) {
+                    if (passed) {
+                        el.className = 'rule-pass';
+                        el.style.color = '#10b981';
+                        if (!el.innerText.startsWith('✔')) {
+                            el.innerText = el.innerText.replace('✖', '✔');
+                        }
+                    } else {
+                        el.className = 'rule-fail';
+                        el.style.color = '#ef4444';
+                        if (!el.innerText.startsWith('✖')) {
+                            el.innerText = el.innerText.replace('✔', '✖');
+                        }
+                    }
                 }
+                if (!passed) allValid = false;
             }
             window.isPasswordValid = allValid;
             parolaEslesmeKontrolEt();
@@ -76,5 +101,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if(confirmInput) {
         confirmInput.addEventListener('input', parolaEslesmeKontrolEt);
+    }
+
+    // Canlı E-Posta Format Sınama (Mail Sınama)
+    const emailInput = document.getElementById('email');
+    const emailCheckMsg = document.getElementById('emailCheckMsg');
+
+    if (emailInput && emailCheckMsg) {
+        emailInput.addEventListener('input', function() {
+            const val = emailInput.value.trim();
+            if (val.length === 0) {
+                emailCheckMsg.style.display = 'none';
+                return;
+            }
+            emailCheckMsg.style.display = 'block';
+            if (window.isValidEmail(val)) {
+                emailCheckMsg.innerText = "✔ Geçerli e-posta formatı";
+                emailCheckMsg.style.color = "#10b981";
+            } else {
+                emailCheckMsg.innerText = "✖ Geçersiz e-posta formatı";
+                emailCheckMsg.style.color = "#ef4444";
+            }
+        });
     }
 });

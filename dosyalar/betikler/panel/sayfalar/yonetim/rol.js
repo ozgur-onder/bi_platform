@@ -59,7 +59,6 @@ const RolYonetimi = (function () {
                     return;
                 }
 
-                // DÜZELTME BURADA: rol_id yerine rol_kodu kullanıyoruz ve tam sayıya (integer) çeviriyoruz.
                 const payload = { 
                     rol_kodu: parseInt(rolKodu, 10), 
                     rol_adi: rolAdi 
@@ -80,7 +79,8 @@ const RolYonetimi = (function () {
                         bildirimGoster(eskiKod ? "Rol başarıyla güncellendi." : "Rol başarıyla eklendi.", "basari");
                         if (basariCallback) basariCallback();
                     } else {
-                        bildirimGoster("İşlem başarısız oldu (Yetki sorunu veya kayıt mevcut olabilir).", "hata");
+                        const hataCevap = await yanit.json().catch(() => ({}));
+                        bildirimGoster(hataCevap.detail || "İşlem başarısız oldu.", "hata");
                     }
                 } catch (e) {
                     bildirimGoster("Sunucu bağlantı hatası.", "hata");
@@ -158,6 +158,7 @@ const RolYonetimi = (function () {
                         let aktifMi = rol["Durum"] === "Aktif" || rol.durum === true;
                         const badge = satirKlon.querySelector(".durum-badge");
                         const aksiyonBtn = satirKlon.querySelector(".aksiyon-btn");
+                        const duzenleBtn = satirKlon.querySelector(".duzenle-btn");
 
                         function satirDurumGuncelle(durum) {
                             badge.textContent = durum ? "Aktif" : "Pasif";
@@ -174,52 +175,63 @@ const RolYonetimi = (function () {
 
                         satirDurumGuncelle(aktifMi);
 
-                        const duzenleBtn = satirKlon.querySelector(".duzenle-btn");
-                        duzenleBtn.addEventListener("click", () => {
-                            rolModalAc(rol, () => rolListesiSekmesiAc());
-                        });
-
-                        aksiyonBtn.addEventListener("click", async function () {
-                            const yeniDurum = !aktifMi;
-                            satirDurumGuncelle(yeniDurum);
-                            aksiyonBtn.disabled = true;
-
-                            try {
-                                const y = await fetch(`/api/rol/${r_id}/durum`, {
-                                    method: "PATCH",
-                                    headers: { "Content-Type": "application/json" },
-                                    body: JSON.stringify({ durum: yeniDurum })
-                                });
-
-                                if (y.ok) {
-                                    aktifMi = yeniDurum;
-                                    const idx = globalRolVerisi.findIndex(r => (r["Rol Kodu"] || r.rol_id || r.id) == r_id);
-                                    if (idx !== -1) {
-                                        if (globalRolVerisi[idx]["Durum"] !== undefined) {
-                                            globalRolVerisi[idx]["Durum"] = yeniDurum ? "Aktif" : "Pasif";
-                                        } else {
-                                            globalRolVerisi[idx].durum = yeniDurum;
-                                        }
-                                    }
-                                } else {
-                                    satirDurumGuncelle(aktifMi);
-                                    bildirimGoster("Durum güncellenemedi.", "hata");
-                                }
-                            } catch (e) {
-                                satirDurumGuncelle(aktifMi);
-                                bildirimGoster("İşlem sırasında hata oluştu.", "hata");
-                            } finally {
-                                aksiyonBtn.disabled = false;
+                        // KORUMA KONTROLÜ: Rol Kodu 1 olan Sistem Yöneticisi rolü kilitlenir
+                        if (r_id == 1 || r_id === "1") {
+                            duzenleBtn.style.display = "none";
+                            aksiyonBtn.style.display = "none";
+                            const islemHucre = satirKlon.querySelector(".islem-hucre");
+                            if (islemHucre) {
+                                islemHucre.innerHTML = '<span style="font-size: 12px; color: var(--renk-yazi-ikincil, #94a3b8); font-style: italic;">Sistem Rolü (Korumalı)</span>';
                             }
-                        });
+                        } else {
+                            if (duzenleBtn) {
+                                duzenleBtn.addEventListener("click", () => {
+                                    rolModalAc(rol, () => rolListesiSekmesiAc());
+                                });
+                            }
+
+                            aksiyonBtn.addEventListener("click", async function () {
+                                const yeniDurum = !aktifMi;
+                                satirDurumGuncelle(yeniDurum);
+                                aksiyonBtn.disabled = true;
+
+                                try {
+                                    const y = await fetch(`/api/rol/${r_id}/durum`, {
+                                        method: "PATCH",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({ durum: yeniDurum })
+                                    });
+
+                                    if (y.ok) {
+                                        aktifMi = yeniDurum;
+                                        const idx = globalRolVerisi.findIndex(r => (r["Rol Kodu"] || r.rol_id || r.id) == r_id);
+                                        if (idx !== -1) {
+                                            if (globalRolVerisi[idx]["Durum"] !== undefined) {
+                                                globalRolVerisi[idx]["Durum"] = yeniDurum ? "Aktif" : "Pasif";
+                                            } else {
+                                                globalRolVerisi[idx].durum = yeniDurum;
+                                            }
+                                        }
+                                    } else {
+                                        satirDurumGuncelle(aktifMi);
+                                        bildirimGoster("Durum güncellenemedi.", "hata");
+                                    }
+                                } catch (e) {
+                                    satirDurumGuncelle(aktifMi);
+                                    bildirimGoster("İşlem sırasında hata oluştu.", "hata");
+                                } finally {
+                                    aksiyonBtn.disabled = false;
+                                }
+                            });
+                        }
 
                         tabloGovdesi.appendChild(satirKlon);
                     });
                 } else {
-                    tabloGovdesi.innerHTML = '<tr><td colspan="5" class="yukleniyor">Sunucudan veri alınamadı.</td></tr>';
+                    tabloGovdesi.innerHTML = '<tr><td colspan="5" class="yukleniyor" style="color: #ef4444;">Sunucudan veri alınamadı.</td></tr>';
                 }
             } catch (hata) {
-                tabloGovdesi.innerHTML = '<tr><td colspan="5" class="yukleniyor">Sunucuya bağlanılamadı.</td></tr>';
+                tabloGovdesi.innerHTML = '<tr><td colspan="5" class="yukleniyor" style="color: #ef4444;">Sunucuya bağlanılamadı.</td></tr>';
             }
         });
     }

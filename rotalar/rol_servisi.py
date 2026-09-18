@@ -74,6 +74,8 @@ async def rol_ekle(rol_kodu: int, rol_adi: str, islem_yapan_sicil: str) -> dict:
         if conn:   conn.close()
 
 async def rol_durum_guncelle(rol_kodu: int, yeni_durum: bool, islem_yapan_sicil: str) -> dict:
+    if rol_kodu == 1 or str(rol_kodu) == '1':
+        return {"icerik": {"detail": "İlk eklenen sistem rolü (Rol Kodu: 1) pasife alınamaz."}, "statu": 403}
     conn = cursor = None
     try:
         conn = db_baglan()
@@ -115,6 +117,8 @@ async def rol_durum_guncelle(rol_kodu: int, yeni_durum: bool, islem_yapan_sicil:
         if conn:   conn.close()
 
 async def rol_duzenle(eski_kodu: int, yeni_kodu: int, yeni_adi: str, islem_yapan_sicil: str) -> dict:
+    if eski_kodu == 1 or yeni_kodu == 1 or str(eski_kodu) == '1' or str(yeni_kodu) == '1':
+        return {"icerik": {"detail": "İlk eklenen sistem rolü (Rol Kodu: 1) üzerinde düzenleme yapılamaz."}, "statu": 403}
     conn = cursor = None
     try:
         conn = db_baglan()
