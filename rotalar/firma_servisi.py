@@ -81,6 +81,8 @@ async def firma_ekle(firma_kodu: str, firma_adi: str, islem_yapan_sicil: str) ->
 
 async def firma_durum_guncelle(firma_kodu: str, yeni_durum: bool,
                                islem_yapan_sicil: str) -> dict:
+    if  firma_kodu == 'F001':
+        return {"icerik": {"detail": "İlk eklenen sistem firması (F001) pasife alınamaz."}, "statu": 403}
     conn = cursor = None
     try:
         conn = db_baglan()
@@ -123,6 +125,8 @@ async def firma_durum_guncelle(firma_kodu: str, yeni_durum: bool,
         if conn:   conn.close()
 
 async def firma_duzenle(eski_kodu: str, yeni_kodu: str, yeni_adi: str, islem_yapan_sicil: str) -> dict:
+    if eski_kodu == 'F001' or yeni_kodu == 'F001':
+        return {"icerik": {"detail": "İlk eklenen sistem firması üzerinde düzenleme yapılamaz."}, "statu": 403}
     conn = cursor = None
     try:
         conn = db_baglan()
