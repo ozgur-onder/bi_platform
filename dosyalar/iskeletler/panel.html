@@ -45,8 +45,8 @@
                 <span class="menu-bolum-baslik">YÖNETİM</span>
                 <ul class="menu-liste">
                     
-                    <!-- 1. Sistem Yönetimi Butonu (Sadece Sistem Yöneticisi Görür - hidden parametresi ile gizlendi) -->
-                    <li class="menu-ogesi" id="yonetim-bolum" data-sayfa="yonetim" data-baslik="Sistem Yönetimi" title="Sistem Yönetimi" hidden>
+                    <!-- 1. Sistem Yönetimi Butonu (Şimdilik Görünür) -->
+                    <li class="menu-ogesi" id="yonetim-bolum" data-sayfa="yonetim" data-baslik="Sistem Yönetimi" title="Sistem Yönetimi">
                         <span class="menu-ikon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -137,6 +137,7 @@
 {% include 'alt_sablonlar/firma_sablonu.html' %}
 {% include 'alt_sablonlar/rol_sablonu.html' %}
 {% include 'alt_sablonlar/kullanici_sablonu.html' %}
+{% include 'alt_sablonlar/yetki_matrisi_sablonu.html' %}
 
 <script src="/dosyalar/betikler/ortak/bildirim.js"></script>
 <script src="/dosyalar/betikler/panel/tema.js"></script>
@@ -148,6 +149,7 @@
 <script src="/dosyalar/betikler/panel/sayfalar/yonetim/firma.js"></script>
 <script src="/dosyalar/betikler/panel/sayfalar/yonetim/rol.js"></script>
 <script src="/dosyalar/betikler/panel/sayfalar/yonetim/kullanici.js"></script>
+<script src="/dosyalar/betikler/panel/sayfalar/yonetim/yetki_matrisi.js"></script>
 <script src="/dosyalar/betikler/panel/uygulama.js"></script>
 
 </body>

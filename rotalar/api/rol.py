@@ -2,7 +2,14 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from rotalar.yetki_servisi import super_admin_gerektir
-from rotalar.rol_servisi import rol_listesi, rol_ekle, rol_durum_guncelle, rol_log_listesi, rol_duzenle
+from rotalar.rol_servisi import (
+    rol_listesi, 
+    rol_ekle, 
+    rol_durum_guncelle, 
+    rol_log_listesi, 
+    rol_duzenle, 
+    rol_matris_listesi
+)
 
 router = APIRouter(prefix="/api/rol")
 
@@ -56,4 +63,10 @@ async def durum_guncelle(
 @router.get("/loglar")
 async def log_listele(kullanici: dict = Depends(super_admin_gerektir)):
     sonuc = await rol_log_listesi()
+    return JSONResponse(content=sonuc["icerik"], status_code=sonuc["statu"])
+
+@router.get("/roller-liste")
+async def roller_matris_listesi():
+    """Rol & Yetki Matrisi için aktif rolleri çeker (/api/rol/roller-liste)"""
+    sonuc = await rol_matris_listesi()
     return JSONResponse(content=sonuc["icerik"], status_code=sonuc["statu"])

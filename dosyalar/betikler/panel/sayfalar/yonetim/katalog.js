@@ -32,6 +32,18 @@ const SistemYonetimiKatalog = (function () {
                     }
                 });
             }
+
+            // Yetki Matrisi Yönlendirmesi (icerikAlani içinde doğru konumda)
+            const yetkiMatrisiKarti = icerikAlani.querySelector("#kart-yetki-matrisi");
+            if (yetkiMatrisiKarti) {
+                yetkiMatrisiKarti.addEventListener("click", () => {
+                    if (typeof YetkiMatrisi !== 'undefined' && YetkiMatrisi.baslat) {
+                        YetkiMatrisi.baslat();
+                    } else {
+                        bildirimGoster("Yetki Matrisi modülü yüklenemedi.", "hata");
+                    }
+                });
+            }
         });
     }
 

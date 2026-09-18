@@ -189,3 +189,20 @@ async def rol_log_listesi() -> dict:
     finally:
         if cursor: cursor.close()
         if conn:   conn.close()
+
+async def rol_matris_listesi() -> dict:
+    """Rol & Yetki Matrisi için aktif rolleri çeker"""
+    conn = cursor = None
+    try:
+        conn = db_baglan()
+        cursor = conn.cursor()
+        cursor.execute("SELECT rol_kodu, rol_adi FROM roller WHERE durum = TRUE ORDER BY rol_kodu ASC;")
+        kayitlar = cursor.fetchall()
+        roller = [{"rol_kodu": r[0], "rol_adi": r[1]} for r in kayitlar]
+        return {"icerik": roller, "statu": 200}
+    except Exception as e:
+        print(f"[rol_servisi] rol_matris_listesi {type(e).__name__}: {e}", file=sys.stderr)
+        return {"icerik": {"detail": "Roller listelenemedi."}, "statu": 500}
+    finally:
+        if cursor: cursor.close()
+        if conn:   conn.close()
