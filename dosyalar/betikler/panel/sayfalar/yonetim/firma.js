@@ -1,6 +1,7 @@
 (function () {
     let globalFirmaVerisi = [];
 
+    // Excel İndirme Fonksiyonu
     function excelIndir(veriDizisi, dosyaAdi, sayfaAdi) {
         if (!veriDizisi || veriDizisi.length === 0) {
             bildirimGoster("Dışa aktarılacak veri bulunamadı.", "uyari");
@@ -16,6 +17,7 @@
         }
     }
 
+    // Yönetim Sekmesi (Kartların Bağlandığı Yer)
     function yonetimSekmesiAc() {
         Sekme.ac("yonetim", "Yönetim", (icerikAlani) => {
             const sablon = document.getElementById("sablon-yonetim");
@@ -24,9 +26,11 @@
             icerikAlani.innerHTML = "";
             icerikAlani.appendChild(sablon.content.cloneNode(true));
 
+            // Firma Kartı
             const firmaKarti = icerikAlani.querySelector("#kart-firma");
             if (firmaKarti) firmaKarti.addEventListener("click", firmaListesiSekmesiAc);
 
+            // Rol Kartı
             const rolKarti = icerikAlani.querySelector("#kart-rol");
             if (rolKarti) {
                 rolKarti.addEventListener("click", () => {
@@ -35,6 +39,7 @@
                 });
             }
 
+            // Kullanıcı Kartı
             const kullaniciKarti = icerikAlani.querySelector("#kart-kullanici");
             if (kullaniciKarti) {
                 kullaniciKarti.addEventListener("click", () => {
@@ -45,32 +50,25 @@
         });
     }
 
-    function firmaModalAc(firmaVerisi = null, basariCallback) {
+    // Yeni Firma Ekleme Modalı (Sadece Ekleme İşlemi Yapar)
+    function yeniFirmaModalAc(basariCallback) {
         const sablon = document.getElementById("sablon-firma-modal");
         if (!sablon) return;
 
         const modalKlon = sablon.content.cloneNode(true);
         const arkaplan = modalKlon.querySelector("#firma-modal-arkaplan");
+        
         document.body.appendChild(arkaplan);
 
-        const baslik = arkaplan.querySelector("#modal-firma-baslik");
-        const inputEskiKod = arkaplan.querySelector("#modal-firma-eski-kodu");
         const inputKod = arkaplan.querySelector("#modal-firma-kodu");
         const inputAdi = arkaplan.querySelector("#modal-firma-adi");
         const btnKaydet = arkaplan.querySelector("#modal-kaydet-btn");
         const btnIptal = arkaplan.querySelector("#modal-iptal-btn");
 
-        if (firmaVerisi) {
-            baslik.textContent = "Firma Düzenle";
-            inputEskiKod.value = firmaVerisi["Firma Kodu"];
-            inputKod.value = firmaVerisi["Firma Kodu"];
-            inputAdi.value = firmaVerisi["Firma Adı"];
-            btnKaydet.textContent = "Güncelle";
-        }
-
         if (inputKod) inputKod.focus();
 
         const kapat = () => arkaplan.remove();
+
         if (btnIptal) btnIptal.addEventListener("click", kapat);
         arkaplan.addEventListener("click", (e) => {
             if (e.target === arkaplan) kapat();
@@ -78,7 +76,6 @@
 
         if (btnKaydet) {
             btnKaydet.addEventListener("click", async () => {
-                const eskiKod = inputEskiKod.value;
                 const firmaKodu = inputKod.value.trim().toUpperCase();
                 const firmaAdi = inputAdi.value.trim();
 
@@ -87,23 +84,19 @@
                     return;
                 }
 
-                const payload = { firma_kodu: firmaKodu, firma_adi: firmaAdi };
-                const endpoint = eskiKod ? `/api/firma/${eskiKod}` : "/api/firma";
-                const method = eskiKod ? "PUT" : "POST";
-
                 try {
-                    const yanit = await fetch(endpoint, {
-                        method: method,
+                    const yanit = await fetch("/api/firma", {
+                        method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(payload)
+                        body: JSON.stringify({ firma_kodu: firmaKodu, firma_adi: firmaAdi })
                     });
 
                     if (yanit.ok) {
                         kapat();
-                        bildirimGoster(eskiKod ? "Firma başarıyla güncellendi." : "Firma başarıyla eklendi.", "basari");
+                        bildirimGoster("Firma başarıyla eklendi.", "basari");
                         if (basariCallback) basariCallback();
                     } else {
-                        bildirimGoster("İşlem başarısız oldu (Mükerrer kod veya yetki sorunu).", "hata");
+                        bildirimGoster("Firma eklenemedi (Mükerrer kod veya yetki sorunu).", "hata");
                     }
                 } catch (e) {
                     bildirimGoster("Sunucu bağlantı hatası.", "hata");
@@ -112,6 +105,7 @@
         }
     }
 
+    // Firma Listesi Ana Tablo
     function firmaListesiSekmesiAc() {
         Sekme.ac("firma_listesi", "Firma Yönetimi", async (icerikAlani) => {
             const sablon = document.getElementById("sablon-firma-listesi");
@@ -119,20 +113,42 @@
 
             icerikAlani.innerHTML = "";
             icerikAlani.appendChild(sablon.content.cloneNode(true));
+
             const tabloGovdesi = icerikAlani.querySelector("#firma-tablo-govdesi");
 
+            // Excel İndir Butonu
             const excelBtn = icerikAlani.querySelector("#excel-aktar-btn");
             if (excelBtn) {
                 excelBtn.addEventListener("click", () => excelIndir(globalFirmaVerisi, "Firma_Listesi.xlsx", "Firmalar"));
             }
 
-            const ekleBtn = icerikAlani.querySelector("#yeni-firma-btn");
-            if (ekleBtn) {
-                ekleBtn.addEventListener("click", () => {
-                    firmaModalAc(null, () => firmaListesiSekmesiAc());
+            // Logları İndir Butonu (Eksik Olan Kısım Eklendi)
+            const logBtn = icerikAlani.querySelector("#log-aktar-btn");
+            if (logBtn) {
+                logBtn.addEventListener("click", async () => {
+                    try {
+                        const yanit = await fetch("/api/firma/loglar");
+                        if (yanit.ok) {
+                            const veriler = await yanit.json();
+                            excelIndir(veriler, "Firma_Guncelleme_Loglari.xlsx", "Loglar");
+                        } else {
+                            bildirimGoster("Loglar alınamadı.", "hata");
+                        }
+                    } catch (hata) {
+                        bildirimGoster("Sunucu bağlantı hatası.", "hata");
+                    }
                 });
             }
 
+            // Yeni Firma Ekle Butonu
+            const ekleBtn = icerikAlani.querySelector("#yeni-firma-btn");
+            if (ekleBtn) {
+                ekleBtn.addEventListener("click", () => {
+                    yeniFirmaModalAc(() => firmaListesiSekmesiAc());
+                });
+            }
+
+            // Tabloyu Doldur
             try {
                 const yanit = await fetch("/api/firma");
                 if (yanit.ok) {
@@ -174,11 +190,6 @@
                         }
 
                         satirDurumGuncelle(aktifMi);
-
-                        const duzenleBtn = satirKlon.querySelector(".duzenle-btn");
-                        duzenleBtn.addEventListener("click", () => {
-                            firmaModalAc(firma, () => firmaListesiSekmesiAc());
-                        });
 
                         aksiyonBtn.addEventListener("click", async function () {
                             const yeniDurum = !aktifMi;
