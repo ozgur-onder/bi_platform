@@ -40,10 +40,13 @@
                 </ul>
             </div>
 
-            <div class="menu-bolum" id="yonetim-bolum" hidden>
+            <!-- YÖNETİM ANA BAŞLIĞI -->
+            <div class="menu-bolum">
                 <span class="menu-bolum-baslik">YÖNETİM</span>
                 <ul class="menu-liste">
-                    <li class="menu-ogesi" data-sayfa="yonetim" data-baslik="Yönetim" title="Yönetim">
+                    
+                    <!-- 1. Sistem Yönetimi Butonu (Sadece Sistem Yöneticisi Görür - hidden parametresi ile gizlendi) -->
+                    <li class="menu-ogesi" id="yonetim-bolum" data-sayfa="yonetim" data-baslik="Sistem Yönetimi" title="Sistem Yönetimi" hidden>
                         <span class="menu-ikon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
                                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -51,14 +54,21 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                             </svg>
                         </span>
-                        <span class="menu-yazi">Yönetim</span>
+                        <span class="menu-yazi">Sistem Yönetimi</span>
                     </li>
+
+                    <!-- 2. Kullanıcı Yönetimi Butonu (Görünür) -->
+                    <li class="menu-ogesi" data-sayfa="kullanici_yonetimi" data-baslik="Kullanıcı Yönetimi" title="Kullanıcı Yönetimi">
+                        <span class="menu-ikon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                            </svg>
+                        </span>
+                        <span class="menu-yazi">Kullanıcı Yönetimi</span>
+                    </li>
+
                 </ul>
             </div>
-
-            <div class="menu-baslik">ERİŞİM</div>
-                <a href="#" class="menu-ogesi" data-sayfa="kullanici_yonetimi">
-                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg> Kullanıcı Yönetimi</a>
 
             <div class="menu-bolum">
                 <span class="menu-bolum-baslik">HESAP</span>

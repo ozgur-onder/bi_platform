@@ -1,38 +1,28 @@
 <template id="sablon-yonetim">
     <div class="sayfa-icerik">
-        <h2 class="sayfa-baslik">Yönetim Paneli</h2>
-        <p class="sayfa-aciklama">Sistem modüllerini buradan yönetebilirsiniz.</p>
+        <h2 class="sayfa-baslik">Sistem Yönetimi</h2>
+        <p class="sayfa-aciklama">Sistemin temel altyapı modüllerini buradan yönetebilirsiniz.</p>
         
-        <div class="izgara-3">
-            <div id="kart-firma" class="kart kart-tıklanabilir">
-                <div class="katalog-kart">
-                    <div class="katalog-ikon-kap">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-                    </div>
-                    <h3 class="katalog-kart-baslik">Firma Yönetimi</h3>
-                    <p class="katalog-kart-aciklama">Sistemde kayıtlı firmaları listeleyin ve yönetin.</p>
+        <div class="kart-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 24px;">
+            
+            <!-- Firma Yönetimi Kartı -->
+            <div class="yonetim-karti" id="kart-firma" style="background-color: var(--renk-kart); border: 1px solid var(--renk-sinir); border-radius: 12px; padding: 24px; cursor: pointer; transition: all 0.2s ease;">
+                <div class="kart-ikon" style="width: 48px; height: 48px; border-radius: 10px; background-color: rgba(59, 130, 246, 0.1); color: #3b82f6; display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
                 </div>
-            </div>
-
-            <div id="kart-rol" class="kart kart-tıklanabilir">
-                <div class="katalog-kart">
-                    <div class="katalog-ikon-kap">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                    </div>
-                    <h3 class="katalog-kart-baslik">Rol Yönetimi</h3>
-                    <p class="katalog-kart-aciklama">Sistemdeki rolleri, yetkileri ve aktiflik durumlarını yönetin.</p>
-                </div>
+                <h3 style="margin: 0 0 8px 0; font-size: 16px; color: var(--renk-yazi-birincil);">Firma Yönetimi</h3>
+                <p style="margin: 0; font-size: 13px; color: var(--renk-yazi-ikincil); line-height: 1.5;">Sistemde kayıtlı firmaları listeleyin ve yönetin.</p>
             </div>
             
-            <div id="kart-kullanici" class="kart kart-tıklanabilir">
-                <div class="katalog-kart">
-                    <div class="katalog-ikon-kap">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                    </div>
-                    <h3 class="katalog-kart-baslik">Kullanıcı Yönetimi</h3>
-                    <p class="katalog-kart-aciklama">Sistemdeki kullanıcıları, yetkilerini ve aktiflik durumlarını yönetin.</p>
+            <!-- Rol Yönetimi Kartı -->
+            <div class="yonetim-karti" id="kart-rol" style="background-color: var(--renk-kart); border: 1px solid var(--renk-sinir); border-radius: 12px; padding: 24px; cursor: pointer; transition: all 0.2s ease;">
+                <div class="kart-ikon" style="width: 48px; height: 48px; border-radius: 10px; background-color: rgba(59, 130, 246, 0.1); color: #3b82f6; display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                 </div>
+                <h3 style="margin: 0 0 8px 0; font-size: 16px; color: var(--renk-yazi-birincil);">Rol Yönetimi</h3>
+                <p style="margin: 0; font-size: 13px; color: var(--renk-yazi-ikincil); line-height: 1.5;">Sistemdeki rolleri, yetkileri ve aktiflik durumlarını yönetin.</p>
             </div>
+
         </div>
     </div>
 </template>
