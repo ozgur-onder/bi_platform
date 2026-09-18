@@ -61,6 +61,14 @@ async def firma_ekle(firma_kodu: str, firma_adi: str, islem_yapan_sicil: str) ->
                VALUES (%s, %s, %s)""",
             (firma_kodu, firma_adi, islem_yapan_sicil)
         )
+        
+        cursor.execute(
+            """INSERT INTO firma_guncelleme_loglari
+               (firma_kodu, firma_adi, yapilan_islem, islem_yapan_kullanici_sicil)
+               VALUES (%s, %s, %s, %s)""",
+            (firma_kodu, firma_adi, "Firma Eklendi", islem_yapan_sicil)
+        )
+        
         conn.commit()
         return {"icerik": {"mesaj": "Firma başarıyla eklendi."}, "statu": 201}
     except Exception as e:
@@ -95,11 +103,13 @@ async def firma_durum_guncelle(firma_kodu: str, yeni_durum: bool,
                WHERE firma_kodu=%s""",
             (yeni_durum, islem_yapan_sicil, firma_kodu)
         )
+        
+        durum_str = f"Statü Değişikliği: {'Aktif' if eski_durum else 'Pasif'}-{'Aktif' if yeni_durum else 'Pasif'}"
         cursor.execute(
             """INSERT INTO firma_guncelleme_loglari
-               (firma_kodu, firma_adi, eski_durum, yeni_durum, islem_yapan_kullanici_sicil)
-               VALUES (%s, %s, %s, %s, %s)""",
-            (firma_kodu, firma_adi, eski_durum, yeni_durum, islem_yapan_sicil)
+               (firma_kodu, firma_adi, yapilan_islem, islem_yapan_kullanici_sicil)
+               VALUES (%s, %s, %s, %s)""",
+            (firma_kodu, firma_adi, durum_str, islem_yapan_sicil)
         )
         conn.commit()
         durum_yazi = "aktifleştirildi" if yeni_durum else "pasife alındı"
@@ -112,53 +122,39 @@ async def firma_durum_guncelle(firma_kodu: str, yeni_durum: bool,
         if cursor: cursor.close()
         if conn:   conn.close()
 
-async def firma_loglari_getir() -> dict:
-    conn = cursor = None
-    try:
-        conn = db_baglan()
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT id, firma_kodu, firma_adi, eski_durum, yeni_durum, 
-                   islem_zamani, islem_yapan_kullanici_sicil 
-            FROM firma_guncelleme_loglari 
-            ORDER BY islem_zamani DESC
-        """)
-        satirlar = cursor.fetchall()
-        loglar = [
-            {
-                "Log ID": r[0],
-                "Firma Kodu": r[1],
-                "Firma Adı": r[2],
-                "Eski Durum": "Aktif" if r[3] else "Pasif",
-                "Yeni Durum": "Aktif" if r[4] else "Pasif",
-                "İşlem Zamanı": tarih_bicimlendir(r[5]),
-                "İşlem Yapan Sicil": r[6] or "SİSTEM"
-            }
-            for r in satirlar
-        ]
-        return {"icerik": loglar, "statu": 200}
-    except Exception as e:
-        print(f"[firma_servisi] log_getir {type(e).__name__}: {e}", file=sys.stderr)
-        return {"icerik": {"detail": "Loglar alınamadı."}, "statu": 500}
-    finally:
-        if cursor: cursor.close()
-        if conn:   conn.close()
-
-import sys
-
 async def firma_duzenle(eski_kodu: str, yeni_kodu: str, yeni_adi: str, islem_yapan_sicil: str) -> dict:
     conn = cursor = None
     try:
         conn = db_baglan()
         cursor = conn.cursor()
         
+        cursor.execute("SELECT firma_kodu, firma_adi FROM firma WHERE firma_kodu=%s", (eski_kodu,))
+        eski_veri = cursor.fetchone()
+        if not eski_veri:
+            return {"icerik": {"detail": "Firma bulunamadı."}, "statu": 404}
+        
+        eski_kod, eski_adi = eski_veri
+        
         cursor.execute("""
             UPDATE firma 
-            SET firma_kodu=%s, firma_adi=%s 
+            SET firma_kodu=%s, firma_adi=%s, olusturma_guncelleme_zamani=NOW(), olusturan_guncelleyen_sicil=%s
             WHERE firma_kodu=%s
-        """, (yeni_kodu, yeni_adi, eski_kodu))
+        """, (yeni_kodu, yeni_adi, islem_yapan_sicil, eski_kodu))
         
-        # Eğer işlem logları tutuyorsanız buraya log insert'i de ekleyebilirsiniz
+        islem_metni = []
+        if eski_kod != yeni_kodu:
+            islem_metni.append(f"Firma Kodu Değişikliği: {eski_kod}-{yeni_kodu}")
+        if eski_adi != yeni_adi:
+            islem_metni.append(f"Firma Adı Değişikliği: {eski_adi}-{yeni_adi}")
+        
+        if islem_metni:
+            yapilan_islem_str = " | ".join(islem_metni)
+            cursor.execute(
+                """INSERT INTO firma_guncelleme_loglari
+                   (firma_kodu, firma_adi, yapilan_islem, islem_yapan_kullanici_sicil)
+                   VALUES (%s, %s, %s, %s)""",
+                (yeni_kodu, yeni_adi, yapilan_islem_str, islem_yapan_sicil)
+            )
         
         conn.commit()
         return {"icerik": {"mesaj": "Firma bilgileri başarıyla güncellendi."}, "statu": 200}
@@ -169,3 +165,34 @@ async def firma_duzenle(eski_kodu: str, yeni_kodu: str, yeni_adi: str, islem_yap
     finally:
         if cursor: cursor.close()
         if conn: conn.close()
+
+async def firma_loglari_getir() -> dict:
+    conn = cursor = None
+    try:
+        conn = db_baglan()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, firma_kodu, firma_adi, yapilan_islem, 
+                   islem_zamani, islem_yapan_kullanici_sicil 
+            FROM firma_guncelleme_loglari 
+            ORDER BY islem_zamani DESC
+        """)
+        satirlar = cursor.fetchall()
+        loglar = [
+            {
+                "Log ID": r[0],
+                "Firma Kodu": r[1],
+                "Firma Adı": r[2],
+                "Yapılan İşlem": r[3],
+                "İşlem Zamanı": tarih_bicimlendir(r[4]),
+                "İşlem Yapan Sicil": r[5] or "SİSTEM"
+            }
+            for r in satirlar
+        ]
+        return {"icerik": loglar, "statu": 200}
+    except Exception as e:
+        print(f"[firma_servisi] log_getir {type(e).__name__}: {e}", file=sys.stderr)
+        return {"icerik": {"detail": "Loglar alınamadı."}, "statu": 500}
+    finally:
+        if cursor: cursor.close()
+        if conn:   conn.close()
